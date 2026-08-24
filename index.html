@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dutch Quest v3</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1d2433;--muted:#667085;--line:#e4e7ec;--accent:#4f46e5;--good:#15803d;--bad:#b42318;--soft:#eef2ff}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:1100px;margin:auto;padding:20px} header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+h1,h2,h3{margin-top:0}.sub,.muted,small{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(85px,1fr));gap:8px;flex:1;max-width:640px}
+.card,.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 3px 14px rgba(16,24,40,.04)}
+.stat{padding:10px;text-align:center}.stat b{display:block;font-size:18px}.stat span{font-size:11px;color:var(--muted)}
+.nav,.row,.bank{display:flex;gap:8px;flex-wrap:wrap}.nav{margin:18px 0}
+button{border:0;border-radius:11px;padding:10px 13px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:#fff}.ghost{background:#fff;border:1px solid var(--line)}.good{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}
+.card{padding:18px;margin-bottom:15px}.hidden{display:none!important}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.badge{display:inline-block;padding:5px 9px;background:var(--soft);border-radius:999px;font-size:12px;margin:2px}
+.progress{height:10px;background:#eaecf0;border-radius:999px;overflow:hidden}.progress>div{height:100%;background:var(--accent)}
+.choice{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);margin:7px 0}.choice:hover{border-color:#a5b4fc}
+input,select{width:100%;padding:11px;border:1px solid #d0d5dd;border-radius:10px;font:inherit;background:#fff}
+.answerbox{min-height:56px;border:2px dashed #d0d5dd;border-radius:12px;padding:9px;display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.token{background:var(--soft);border:1px solid #c7d2fe;border-radius:9px;padding:8px 10px;cursor:pointer}
+.feedback{padding:12px;border-radius:11px;margin-top:12px}.feedback.ok{background:#dcfce7;color:#14532d}.feedback.no{background:#fee2e2;color:#7f1d1d}
+.lesson{padding:13px;border:1px solid var(--line);border-radius:13px;margin:8px 0;cursor:pointer}.lesson:hover{border-color:#a5b4fc}
+table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:14px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#4f46e5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dutch Quest">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+
+<style>
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+button,.token,.choice{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+@media(max-width:520px){
+  .app{padding:12px}
+  h1{font-size:24px}
+  .card{padding:14px;border-radius:14px}
+  button{min-height:44px}
+  .choice{font-size:16px}
+  input,select{font-size:16px}
+  .stats{grid-template-columns:repeat(2,1fr);width:100%}
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+<header>
+  <div><h1>🇳🇱 Dutch Quest v3</h1><div class="sub">Personalised A2 → B1 trainer built from your recurring mistakes and past drills</div></div>
+  <div class="stats">
+    <div class="stat"><b id="xp">0</b><span>XP</span></div>
+    <div class="stat"><b id="level">1</b><span>Level</span></div>
+    <div class="stat"><b id="hearts">❤️❤️❤️❤️❤️</b><span>Hearts</span></div>
+    <div class="stat"><b id="streak">0🔥</b><span>Streak</span></div>
+    <div class="stat"><b id="mastered">0</b><span>Mastered</span></div>
+  </div>
+</header>
+
+<div class="nav">
+<button class="primary" onclick="show('play')">Play</button>
+<button class="ghost" onclick="show('lessons')">Lessons</button>
+<button class="ghost" onclick="show('enemies')">Enemy list</button>
+<button class="ghost" onclick="show('progress')">Progress</button>
+<button class="ghost" onclick="show('data')">Data</button>
+</div>
+
+<section id="play" class="view">
+<div class="card">
+  <div class="row" style="justify-content:space-between;align-items:center">
+    <div><span class="badge" id="lessonBadge">Mixed Review</span><span class="badge" id="typeBadge">Challenge</span></div>
+    <b id="qNo">1 / 8</b>
+  </div>
+  <div class="progress" style="margin:12px 0"><div id="roundBar" style="width:0"></div></div>
+  <h2 id="prompt">Start a mixed round or choose a lesson.</h2>
+  <div id="greek" class="muted"></div>
+  <div id="choiceArea"></div>
+  <div id="puzzleArea" class="hidden"><div id="answerBox" class="answerbox"></div><div id="wordBank" class="bank"></div></div>
+  <div id="textArea" class="hidden"><input id="textAnswer" autocomplete="off" placeholder="Type your Dutch answer…"></div>
+  <div class="row" style="margin-top:12px">
+    <button id="startBtn" class="primary" onclick="startRound()">Start mixed round</button>
+    <button id="checkBtn" class="primary hidden" onclick="checkAnswer()">Check</button>
+    <button id="hintBtn" class="ghost hidden" onclick="showHint()">Hint</button>
+    <button id="nextBtn" class="good hidden" onclick="nextQuestion()">Next</button>
+  </div>
+  <div id="feedback" class="feedback hidden"></div>
+</div>
+<div class="grid">
+  <div class="card"><b>🎯 Daily quest</b><p class="muted">Answer 20 questions today.</p><div class="progress"><div id="dailyBar"></div></div><p id="dailyText"></p></div>
+  <div class="card"><b>👹 Current enemies</b><div id="enemyBadges" style="margin-top:8px"></div></div>
+</div>
+</section>
+
+<section id="lessons" class="view hidden">
+<div class="card"><h2>Lesson path</h2><p class="muted">Lessons are based on patterns from your previous Dutch practice.</p><div id="lessonList"></div></div>
+</section>
+
+<section id="enemies" class="view hidden">
+<div class="card"><h2>👹 Enemy words & grammar</h2>
+<table><thead><tr><th>Skill</th><th>Category</th><th>Misses</th><th>Wins</th><th>Status</th></tr></thead><tbody id="enemyTable"></tbody></table></div>
+</section>
+
+<section id="progress" class="view hidden">
+<div class="grid">
+  <div class="card"><h2>Overall</h2><div id="overall"></div></div>
+  <div class="card"><h2>Skill mastery</h2><div id="skillBars"></div></div>
+</div>
+</section>
+
+<section id="data" class="view hidden">
+<div class="card"><h2>Save or move progress</h2>
+<div class="row"><button class="ghost" onclick="exportData()">Export progress</button><button class="ghost" onclick="document.getElementById('importFile').click()">Import progress</button><input id="importFile" class="hidden" type="file" accept=".json" onchange="importData(event)"><button class="bad" onclick="resetData()">Reset</button></div>
+</div>
+<div class="card"><h2>Add your own challenge</h2>
+<input id="customPrompt" placeholder="English prompt">
+<input id="customGreek" placeholder="Greek support (optional)" style="margin-top:8px">
+<input id="customAnswer" placeholder="Correct Dutch answer" style="margin-top:8px">
+<select id="customTag" style="margin-top:8px">
+<option>word_order</option><option>subordinate_clause</option><option>perfect_tense</option><option>separable_verb</option><option>preposition</option><option>vocabulary</option>
+</select>
+<button class="primary" style="margin-top:8px" onclick="addCustom()">Add challenge</button>
+</div>
+</section>
+
+<footer>Dutch Quest v3 • works offline • progress stays in your browser</footer>
+</div>
+
+<script>
+const lessonInfo={
+"Core vocabulary":["🧠","aanvankelijk, aarzeling, aandachtig, voorzichtig"],
+"Word order":["🔀","V2, time-first sentences, inversion"],
+"Subordinate clauses":["🧩","omdat, nadat, wanneer, hoewel, als"],
+"Perfect tense":["⏱️","hebben/zijn + participle"],
+"Separable verbs":["🔧","aanpassen and split verbs"],
+"ER + preposition":["🔗","eraan, erop, ermee, ervoor, erover, ernaar"],
+"ER + number":["🔢","Ik heb er twee and quantity patterns"],
+"Passive voice":["🏗️","worden + participle, present passive"],
+"Relative clauses":["🧷","die / dat + verb-final"],
+"Indirect questions":["❓","of / waar / waarom + verb-final"],
+"Toen vs als":["🕒","one past event vs repeated/conditional"],
+"TE + infinitive":["🎯","proberen / vergeten / beginnen + te"],
+"Pronouns & order":["👤","het / hem / me / ze in natural order"],
+"Comparison dan/als":["⚖️","groter dan, even groot als"],
+"Modal particles":["💬","even, maar, wel for natural spoken Dutch"],
+"Work & CAD":["📐","tekeningen, afmetingen, aanwijzingen, revisies"],
+"Logistics & daily work":["📦","warehouse, planning, delays, orders"],
+"B1 mixed":["🏆","longer sentences combining several weaknesses"]
+};
+
+const Q=[
+["Core vocabulary","choice","Ik luister ___ naar de aanwijzingen.","Ακούω προσεκτικά τις οδηγίες.","aandachtig","aandachtig_vs_voorzichtig","Mental focus = aandachtig",["voorzichtig","aandachtig"]],
+["Core vocabulary","choice","De medewerker verplaatst het glas ___.","Ο εργαζόμενος μετακινεί προσεκτικά το ποτήρι.","voorzichtig","aandachtig_vs_voorzichtig","Caution / avoiding damage = voorzichtig",["aandachtig","voorzichtig"]],
+["Core vocabulary","text","Translate: Initially, I found Dutch difficult.","Αρχικά βρήκα τα ολλανδικά δύσκολα.","Aanvankelijk vond ik Nederlands moeilijk.","aanvankelijk","Aanvankelijk first → verb before subject."],
+["Core vocabulary","text","Translate: I hesitate to send the email.","Διστάζω να στείλω το email.","Ik aarzel om de e-mail te sturen.","aarzelen_om_te","aarzelen om te + infinitive"],
+["Core vocabulary","choice","Na enige ___ besloot hij toch te solliciteren.","Μετά από κάποιον δισταγμό...","aarzeling","aarzeling","aarzeling = hesitation",["aandacht","aarzeling","voorzichtig"]],
+["Core vocabulary","choice","Which word means dimensions?","Ποια λέξη σημαίνει διαστάσεις;","afmetingen","afmetingen","metingen = measurements; afmetingen = dimensions",["metingen","afmetingen","aanwijzingen"]],
+["Core vocabulary","choice","Which word means instructions / indications?","οδηγίες / ενδείξεις","aanwijzingen","aanwijzingen","AFwijzing = rejection",["afwijzingen","aanwijzingen","afmetingen"]],
+
+["Word order","puzzle","Initially, I worked in a warehouse.","Αρχικά εργαζόμουν σε αποθήκη.","Aanvankelijk werkte ik in een magazijn.","word_order","Aanvankelijk occupies position 1.",["aanvankelijk","werkte","ik","in een magazijn"]],
+["Word order","puzzle","Tomorrow I work at home.","Αύριο δουλεύω από το σπίτι.","Morgen werk ik thuis.","word_order","Time first → inversion.",["morgen","werk","ik","thuis"]],
+["Word order","puzzle","When I have free time, I read Dutch books.","Όταν έχω ελεύθερο χρόνο, διαβάζω ολλανδικά βιβλία.","Wanneer ik vrije tijd heb, lees ik Nederlandse boeken.","word_order","Verb-final first clause; inversion in main clause.",["wanneer","ik","vrije tijd","heb","lees","ik","Nederlandse boeken"]],
+["Word order","choice","Choose the correct sentence.","Διάλεξε τη σωστή πρόταση.","Aanvankelijk werkte ik in Nederland.","word_order","V2 rule.",["Aanvankelijk ik werkte in Nederland.","Aanvankelijk werkte ik in Nederland."]],
+
+["Subordinate clauses","puzzle","Because I did not understand the instructions, I could not finish the project.","Επειδή δεν κατάλαβα τις οδηγίες...","Omdat ik de instructies niet goed begreep, kon ik het project niet afmaken.","subordinate_clause","omdat clause → verb at the end.",["omdat","ik","de instructies","niet goed","begreep","kon","ik","het project","niet","afmaken"]],
+["Subordinate clauses","puzzle","After I had read the instructions carefully, I adapted to the new situation.","Αφού είχα διαβάσει προσεκτικά τις οδηγίες...","Nadat ik de aanwijzingen aandachtig had gelezen, paste ik me aan de nieuwe situatie aan.","subordinate_clause","nadat + subject + ... + verbs at end.",["nadat","ik","de aanwijzingen","aandachtig","had gelezen","paste","ik","me","aan","de nieuwe situatie","aan"]],
+["Subordinate clauses","choice","Which has correct word order?","Ποια έχει σωστή σειρά λέξεων;","Omdat hij ziek is, blijft hij thuis.","subordinate_clause","Verb final after omdat.",["Omdat hij ziek is, blijft hij thuis.","Omdat hij is ziek, blijft hij thuis."]],
+["Subordinate clauses","choice","___ ik in de tuin heb gewerkt, neem ik een douche.","Αφού δούλεψα στον κήπο...","Nadat","subordinate_clause","Nadat = after a completed action.",["Nadat","Maar","Want"]],
+
+["Perfect tense","choice","Ik heb de tekening ___.","Έχω εξετάσει το σχέδιο.","bekeken","perfect_tense","hebben + participle",["bekijken","bekeken","bekeek"]],
+["Perfect tense","choice","Ik heb de aanwijzingen ___.","Διάβασα τις οδηγίες.","gelezen","perfect_tense","lezen → gelezen",["gelezen","lezen","las"]],
+["Perfect tense","puzzle","I adjusted the drawing.","Προσάρμοσα το σχέδιο.","Ik heb de tekening aangepast.","perfect_tense","aanpassen → aangepast",["ik","heb","de tekening","aangepast"]],
+["Perfect tense","choice","Which is correct?","Ποιο είναι σωστό;","Ik heb in Nederland gewoond.","perfect_auxiliary","wonen normally takes hebben.",["Ik heb in Nederland gewoond.","Ik ben in Nederland gewoond."]],
+
+["Separable verbs","puzzle","I adjust the drawing to the new dimensions.","Προσαρμόζω το σχέδιο στις νέες διαστάσεις.","Ik pas de tekening aan de nieuwe afmetingen aan.","aanpassen","aanpassen splits.",["ik","pas","de tekening","aan","de nieuwe afmetingen","aan"]],
+["Separable verbs","puzzle","I adapted to the new working environment.","Προσαρμόστηκα στο νέο εργασιακό περιβάλλον.","Ik heb me aan de nieuwe werkomgeving aangepast.","reflexive_aanpassen","zich aanpassen aan iets",["ik","heb","me","aan","de nieuwe werkomgeving","aangepast"]],
+["Separable verbs","choice","Which means: I changed the working hours?","Άλλαξα το ωράριο εργασίας.","Ik heb de werktijden aangepast.","reflexive_aanpassen","Object changes vs you adapt.",["Ik heb de werktijden aangepast.","Ik heb me aan de werktijden aangepast."]],
+
+["ER + preposition","choice","Ik denk aan het probleem. → Ik denk ___.","Το σκέφτομαι.","eraan","er_preposition","denken aan → eraan",["eraan","erop","ermee"]],
+["ER + preposition","choice","Ik wacht op de bus. → Ik wacht ___.","Το περιμένω.","erop","er_preposition","wachten op → erop",["eraan","erop","ervoor"]],
+["ER + preposition","choice","Ik werk met dit programma. → Ik werk ___.","Δουλεύω με αυτό.","ermee","er_preposition","met → mee",["ermet","ermee","eraan"]],
+["ER + preposition","choice","Ik praat over het project. → Ik praat ___.","Μιλάω γι' αυτό.","erover","er_preposition","praten over → erover",["erover","ernaar","ervoor"]],
+["ER + preposition","choice","Ik kijk naar de tekening. → Ik kijk ___.","Το κοιτάζω.","ernaar","er_preposition","kijken naar → ernaar",["ernaar","erop","eraan"]],
+["ER + preposition","choice","Ik ben ___ verantwoordelijk.","Είμαι υπεύθυνος γι' αυτό.","ervoor","er_preposition","voor → ervoor",["ervoor","erover","ermee"]],
+
+["Work & CAD","choice","The engineer checks the ___ on the drawing.","Ο μηχανικός ελέγχει τις διαστάσεις.","afmetingen","cad_vocabulary","afmetingen = dimensions",["afmetingen","aarzelingen","werkomgevingen"]],
+["Work & CAD","puzzle","I carefully checked the new drawing.","Έλεγξα προσεκτικά το νέο σχέδιο.","Ik heb de nieuwe tekening aandachtig gecontroleerd.","cad_vocabulary","aandachtig = mental focus",["ik","heb","de nieuwe tekening","aandachtig","gecontroleerd"]],
+["Work & CAD","choice","Which is working environment?","εργασιακό περιβάλλον","werkomgeving","work_vocabulary","omgeving = environment",["werklucht","werkomgeving","werkzicht"]],
+["Work & CAD","choice","Which is rejection?","απόρριψη","afwijzing","work_vocabulary","AFwijzing = rejection",["aanwijzing","afwijzing","afmeting"]],
+["Work & CAD","text","Translate: I organise drawings and technical documents.","Οργανώνω σχέδια και τεχνικά έγγραφα.","Ik organiseer tekeningen en technische documenten.","work_vocabulary","Useful work sentence."],
+["Work & CAD","text","Translate: I check dimensions, texts, layers and revisions.","Ελέγχω διαστάσεις, κείμενα, layers και revisions.","Ik controleer afmetingen, teksten, lagen en revisies.","work_vocabulary","controleer + objects"],
+
+["B1 mixed","puzzle","Initially I was cautious, but after reading the instructions carefully, I adjusted the drawing to the new dimensions.","Αρχικά ήμουν προσεκτικός, αλλά αφού διάβασα προσεκτικά τις οδηγίες...","Aanvankelijk was ik voorzichtig, maar nadat ik de aanwijzingen aandachtig had gelezen, heb ik de tekening aan de nieuwe afmetingen aangepast.","b1_mixed","nadat verb-final + main inversion + aangepast",["aanvankelijk","was","ik","voorzichtig","maar","nadat","ik","de aanwijzingen","aandachtig","had gelezen","heb","ik","de tekening","aan","de nieuwe afmetingen","aangepast"]],
+["B1 mixed","puzzle","After some hesitation, I checked the dimensions carefully because I was unsure whether the drawing was correct.","Μετά από κάποιον δισταγμό...","Na enige aarzeling heb ik de afmetingen aandachtig gecontroleerd, omdat ik niet zeker wist of de tekening correct was.","b1_mixed","omdat and of clauses are verb-final",["na enige aarzeling","heb","ik","de afmetingen","aandachtig","gecontroleerd","omdat","ik","niet zeker","wist","of","de tekening","correct","was"]],
+["B1 mixed","puzzle","Initially, I hesitated to apply, but later I changed my mind.","Αρχικά δίστασα να κάνω αίτηση, αλλά αργότερα άλλαξα γνώμη.","Aanvankelijk aarzelde ik om te solliciteren, maar later veranderde ik van gedachten.","b1_mixed","van gedachten veranderen",["aanvankelijk","aarzelde","ik","om","te solliciteren","maar","later","veranderde","ik","van gedachten"]],
+["B1 mixed","choice","Choose the natural B1 sentence.","Διάλεξε τη φυσική πρόταση.","Wanneer ik vrije tijd heb, lees ik Nederlandse boeken.","b1_mixed","Subordinate clause then inversion.",["Wanneer ik vrije tijd heb, ik lees Nederlandse boeken.","Wanneer ik vrije tijd heb, lees ik Nederlandse boeken."]],
+["ER + number","choice","Ik heb drie fietsen. → Ik heb ___ drie.","Έχω τρία από αυτά.","er","er_number","er replaces the previously mentioned noun.",["er","ze","het"]],
+["ER + number","puzzle","I have two of them.","Έχω δύο από αυτά.","Ik heb er twee.","er_number","er comes before the number.",["ik","heb","er","twee"]],
+["ER + number","choice","Which is natural Dutch?","Ποιο είναι φυσικό στα ολλανδικά;","Ik heb er nog één.","er_number","Use er when the noun is already known.",["Ik heb nog één ervan.","Ik heb er nog één."]],
+
+["Passive voice","choice","The work is arranged today.","Η δουλειά κανονίζεται σήμερα.","Het wordt vandaag geregeld.","passive_voice","Present passive = worden + past participle.",["Het is vandaag regelen.","Het wordt vandaag geregeld.","Het wordt vandaag regelen."]],
+["Passive voice","puzzle","The drawing is checked by the engineer.","Το σχέδιο ελέγχεται από τον μηχανικό.","De tekening wordt door de ingenieur gecontroleerd.","passive_voice","worden + participle; door = by.",["de tekening","wordt","door de ingenieur","gecontroleerd"]],
+["Passive voice","choice","Which is passive?","Ποια είναι παθητική;","De documenten worden opgeslagen.","passive_voice","worden + participle.",["De documenten slaan op.","De documenten worden opgeslagen."]],
+["Passive voice","text","Translate: The problem is solved today.","Το πρόβλημα λύνεται σήμερα.","Het probleem wordt vandaag opgelost.","passive_voice","oplossen → opgelost"],
+
+["Relative clauses","choice","Dat is de man ___ me geholpen heeft.","Αυτός είναι ο άντρας που με βοήθησε.","die","relative_die_dat","de man → die",["die","dat","wat"]],
+["Relative clauses","choice","Dat is het project ___ gisteren begon.","Αυτό είναι το έργο που ξεκίνησε χθες.","dat","relative_die_dat","het project → dat",["die","dat","wie"]],
+["Relative clauses","puzzle","This is the drawing that I adjusted yesterday.","Αυτό είναι το σχέδιο που προσάρμοσα χθες.","Dit is de tekening die ik gisteren heb aangepast.","relative_die_dat","Relative clause verb group goes to the end.",["dit is","de tekening","die","ik","gisteren","heb aangepast"]],
+
+["Indirect questions","choice","Kom je morgen? → Ik weet niet ___.","Δεν ξέρω αν θα έρθεις αύριο.","of je morgen komt","indirect_question","Indirect yes/no question uses of + verb-final.",["of je morgen komt","of kom je morgen","dat je morgen komt"]],
+["Indirect questions","choice","Waar woon je? → Ik weet niet ___.","Δεν ξέρω πού μένεις.","waar je woont","indirect_question","Question word + subject + verb-final.",["waar woon je","waar je woont","waar woont je"]],
+["Indirect questions","choice","Correct the pattern: Ik begrijp niet waarom ___ .","Δεν καταλαβαίνω γιατί με ρωτάς αυτό.","je me dat vraagt","indirect_question","Indirect question has no inversion.",["vraag je me dat","je me dat vraagt","je vraagt me dat"]],
+["Indirect questions","puzzle","I wonder whether he is at home.","Αναρωτιέμαι αν είναι σπίτι.","Ik vraag me af of hij thuis is.","indirect_question","of clause → verb at the end.",["ik","vraag","me","af","of","hij","thuis","is"]],
+
+["Toen vs als","choice","___ de brand geblust was, was het gevaar voorbij.","Όταν έσβησε η φωτιά, ο κίνδυνος πέρασε.","Toen","toen_als","Toen = one specific event in the past.",["Toen","Als","Wanneer"]],
+["Toen vs als","choice","___ je ziek bent, moet je de dokter bellen.","Όταν/αν είσαι άρρωστος, πρέπει να καλέσεις τον γιατρό.","Als","toen_als","Als = condition or repeated situation.",["Toen","Als","Daarna"]],
+["Toen vs als","choice","___ ik in Nederland woonde, fietste ik vaak naar mijn werk.","Όταν ζούσα στην Ολλανδία, πήγαινα συχνά στη δουλειά με ποδήλατο.","Toen","toen_als","A past period = toen.",["Toen","Als","Omdat"]],
+
+["TE + infinitive","choice","Ik probeer meer Nederlands ___.","Προσπαθώ να μιλάω περισσότερο ολλανδικά.","te praten","te_infinitive","proberen + te + infinitive",["praten","te praten","gepraat"]],
+["TE + infinitive","choice","Ik probeer de tekening ___.","Προσπαθώ να διορθώσω το σχέδιο.","te corrigeren","te_infinitive","proberen te + infinitive",["corrigeren","te corrigeren","gecorrigeerd"]],
+["TE + infinitive","puzzle","I try to speak Dutch every day.","Προσπαθώ να μιλάω ολλανδικά κάθε μέρα.","Ik probeer elke dag Nederlands te spreken.","te_infinitive","te goes before infinitive.",["ik","probeer","elke dag","Nederlands","te spreken"]],
+
+["Pronouns & order","choice","I called him just now.","Τον πήρα μόλις τηλέφωνο.","Ik heb hem net opgebeld.","pronoun_order","Object pronoun before adverb/participle group.",["Ik heb net hem opgebeld.","Ik heb hem net opgebeld."]],
+["Pronouns & order","choice","I have already done it.","Το έχω ήδη κάνει.","Ik heb het al gedaan.","pronoun_order","Unstressed object pronoun comes early.",["Ik heb al het gedaan.","Ik heb het al gedaan."]],
+["Pronouns & order","puzzle","I gave it to him yesterday.","Του το έδωσα χθες.","Ik heb het hem gisteren gegeven.","pronoun_order","Pronouns usually come before time/adverb.",["ik","heb","het","hem","gisteren","gegeven"]],
+
+["Comparison dan/als","choice","Mijn fiets is sneller ___ jouw fiets.","Το ποδήλατό μου είναι γρηγορότερο από το δικό σου.","dan","dan_als","Comparative → dan.",["dan","als","of"]],
+["Comparison dan/als","choice","Deze tekening is even duidelijk ___ die tekening.","Αυτό το σχέδιο είναι εξίσου σαφές με εκείνο.","als","dan_als","even ... als",["dan","als","zoals"]],
+
+["Modal particles","choice","Wacht ___, ik kom eraan.","Περίμενε λίγο, έρχομαι.","even","modal_particles","even softens a small request.",["even","toch","ooit"]],
+["Modal particles","choice","Kom ___ binnen.","Πέρασε μέσα.","maar","modal_particles","maar makes an invitation softer/natural.",["maar","wel","toen"]],
+["Modal particles","choice","Hij doet de boodschappen ___, maar hij heeft het brood vergeten.","Θα κάνει τα ψώνια, αλλά ξέχασε το ψωμί.","wel","modal_particles","wel can mark contrast/assurance.",["wel","even","toen"]],
+
+["Logistics & daily work","puzzle","Because the train arrived too late, I was delayed.","Επειδή το τρένο άργησε, είχα καθυστέρηση.","Doordat de trein te laat kwam, had ik vertraging.","logistics_work","doordat gives a direct cause.",["doordat","de trein","te laat","kwam","had","ik","vertraging"]],
+["Logistics & daily work","text","Translate: I used to work in a warehouse.","Παλιά εργαζόμουν σε αποθήκη.","Vroeger werkte ik in een magazijn.","logistics_work","Vroeger + inversion."],
+["Logistics & daily work","text","Translate: I check the stock and process orders.","Ελέγχω το απόθεμα και επεξεργάζομαι παραγγελίες.","Ik controleer de voorraad en verwerk bestellingen.","logistics_work","voorraad = stock; bestellingen = orders."],
+["Logistics & daily work","choice","Which means stock/inventory?","απόθεμα","voorraad","logistics_work","voorraad = stock/inventory",["voorraad","afmeting","aanwijzing"]],
+["Logistics & daily work","choice","Which means delay?","καθυστέρηση","vertraging","logistics_work","vertraging = delay",["vertraging","verandering","voorzichtig"]],
+
+["B1 mixed","puzzle","Because his car is parked incorrectly, he gets a fine.","Επειδή το αυτοκίνητό του είναι παρκαρισμένο λάθος, παίρνει πρόστιμο.","Omdat zijn auto fout geparkeerd staat, krijgt hij een boete.","b1_mixed","omdat clause verb-final, then inversion.",["omdat","zijn auto","fout geparkeerd","staat","krijgt","hij","een boete"]],
+["B1 mixed","puzzle","I have thought for a long time that I would never learn Dutch.","Για πολύ καιρό πίστευα ότι δεν θα μάθαινα ολλανδικά.","Ik heb lang gedacht dat ik geen Nederlands zou leren.","b1_mixed","dat clause → verb group at the end.",["ik","heb","lang","gedacht","dat","ik","geen Nederlands","zou leren"]],
+["B1 mixed","puzzle","If you take an aspirin, the headache will go away.","Αν πάρεις ασπιρίνη, ο πονοκέφαλος θα περάσει.","Als je een aspirientje neemt, dan gaat de hoofdpijn over.","b1_mixed","Als clause verb-final; main clause inversion.",["als","je","een aspirientje","neemt","dan","gaat","de hoofdpijn","over"]]
+
+].map(a=>({lesson:a[0],type:a[1],prompt:a[2],greek:a[3],answer:a[4],tag:a[5],hint:a[6],options:a[7],words:a[1]==="puzzle"?a[7]:undefined}));
+
+const initial={xp:120,hearts:5,streak:0,bestStreak:0,answered:0,correct:0,today:0,date:new Date().toDateString(),custom:[],mastery:{}};
+for(const q of Q) if(!initial.mastery[q.tag]) initial.mastery[q.tag]={misses:0,wins:0,cat:q.lesson};
+Object.assign(initial.mastery.word_order,{misses:2,wins:1});
+Object.assign(initial.mastery.subordinate_clause,{misses:4,wins:0});
+Object.assign(initial.mastery.perfect_tense,{misses:3,wins:1});
+Object.assign(initial.mastery.aandachtig_vs_voorzichtig,{misses:3,wins:0});
+Object.assign(initial.mastery.aanpassen,{misses:3,wins:1});
+Object.assign(initial.mastery.reflexive_aanpassen,{misses:2,wins:1});
+Object.assign(initial.mastery.er_preposition,{misses:3,wins:0});
+
+let state; try{state=JSON.parse(localStorage.getItem("dqv3"))||structuredClone(initial)}catch{state=structuredClone(initial)}
+for(const [k,v] of Object.entries(initial.mastery)) if(!state.mastery[k]) state.mastery[k]=v;
+if(state.date!==new Date().toDateString()){state.today=0;state.date=new Date().toDateString()}
+let selectedLesson="Mixed Review", round=[], idx=0, selected=[], chosen="", checked=false, hintUsed=false;
+
+function save(){localStorage.setItem("dqv3",JSON.stringify(state));render()}
+function show(id){document.querySelectorAll(".view").forEach(x=>x.classList.add("hidden"));document.getElementById(id).classList.remove("hidden")}
+function norm(s){return(s||"").toLowerCase().replace(/[.,!?]/g,"").replace(/e-mail/g,"email").replace(/\s+/g," ").trim()}
+function dist(a,b){a=norm(a);b=norm(b);let m=Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));for(let i=0;i<=a.length;i++)m[i][0]=i;for(let j=0;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
+function mastered(){return Object.values(state.mastery).filter(v=>v.wins>=3&&v.wins>v.misses).length}
+
+function startRound(){
+ state.hearts=5;idx=0;round=[];selected=[];chosen="";
+ let pool=[...Q,...state.custom];
+ if(selectedLesson!=="Mixed Review") pool=pool.filter(q=>q.lesson===selectedLesson);
+ let weighted=[];
+ pool.forEach(q=>{let m=state.mastery[q.tag]||{misses:0,wins:0};let w=Math.max(1,1+m.misses*2-Math.min(m.wins,3));for(let i=0;i<w;i++)weighted.push(q)});
+ while(round.length<Math.min(8,pool.length)){let q=weighted[Math.floor(Math.random()*weighted.length)];if(!round.includes(q))round.push(q)}
+ document.getElementById("startBtn").classList.add("hidden");load();
+}
+
+function load(){
+ checked=false;hintUsed=false;selected=[];chosen="";
+ let q=round[idx];
+ document.getElementById("lessonBadge").textContent=q.lesson;
+ document.getElementById("typeBadge").textContent=q.type==="puzzle"?"🧩 Puzzle":q.type==="choice"?"🎯 Choose":"⌨️ Translate";
+ document.getElementById("qNo").textContent=(idx+1)+" / "+round.length;
+ document.getElementById("roundBar").style.width=((idx+1)/round.length*100)+"%";
+ document.getElementById("prompt").textContent=q.prompt;document.getElementById("greek").textContent=q.greek||"";
+ ["choiceArea","puzzleArea","textArea"].forEach(id=>document.getElementById(id).classList.add("hidden"));
+ document.getElementById("feedback").classList.add("hidden");document.getElementById("checkBtn").classList.remove("hidden");document.getElementById("hintBtn").classList.remove("hidden");document.getElementById("nextBtn").classList.add("hidden");
+ if(q.type==="choice"){let a=document.getElementById("choiceArea");a.innerHTML="";a.classList.remove("hidden");q.options.forEach(o=>{let b=document.createElement("button");b.className="choice";b.textContent=o;b.onclick=()=>{chosen=o;[...a.children].forEach(x=>x.style.outline="");b.style.outline="2px solid var(--accent)"};a.appendChild(b)})}
+ else if(q.type==="puzzle"){document.getElementById("puzzleArea").classList.remove("hidden");let bank=document.getElementById("wordBank"),box=document.getElementById("answerBox");bank.innerHTML="";box.innerHTML="";[...q.words].sort(()=>Math.random()-.5).forEach(w=>{let s=document.createElement("span");s.className="token";s.textContent=w;s.onclick=()=>{if(s.parentElement.id==="wordBank"){selected.push(w);box.appendChild(s)}else{selected.splice(selected.indexOf(w),1);bank.appendChild(s)}};bank.appendChild(s)})}
+ else{document.getElementById("textArea").classList.remove("hidden");document.getElementById("textAnswer").value=""}
+}
+
+function currentAnswer(q){return q.type==="choice"?chosen:q.type==="puzzle"?selected.join(" "):document.getElementById("textAnswer").value}
+function checkAnswer(){
+ if(checked)return;let q=round[idx],ua=currentAnswer(q);if(!ua){alert("Answer first.");return}checked=true;
+ let exact=norm(ua)===norm(q.answer),close=!exact&&dist(ua,q.answer)<=Math.max(2,Math.floor(norm(q.answer).length*.06)),ok=exact||close,gain=0;
+ state.answered++;state.today++;
+ let m=state.mastery[q.tag]||(state.mastery[q.tag]={misses:0,wins:0,cat:q.lesson});
+ if(ok){state.correct++;state.streak++;state.bestStreak=Math.max(state.bestStreak,state.streak);gain=exact?10:8;if(hintUsed)gain=Math.max(4,gain-2);if(state.streak===3)gain+=5;if(state.streak===5)gain+=15;state.xp+=gain;m.wins++}
+ else{state.streak=0;state.hearts=Math.max(0,state.hearts-1);m.misses++}
+ let f=document.getElementById("feedback");f.className="feedback "+(ok?"ok":"no");f.classList.remove("hidden");f.innerHTML=ok?`<b>${exact?"Correct ✅":"Almost exact ✅"} +${gain} XP</b><br>${q.answer}`:`<b>Not yet ❌</b><br><b>Correct:</b> ${q.answer}<br><small>Focus: ${q.tag.replaceAll("_"," ")}</small>`;
+ document.getElementById("checkBtn").classList.add("hidden");document.getElementById("hintBtn").classList.add("hidden");document.getElementById("nextBtn").classList.remove("hidden");save()
+}
+function showHint(){hintUsed=true;let f=document.getElementById("feedback");f.className="feedback";f.classList.remove("hidden");f.textContent="💡 "+round[idx].hint}
+function nextQuestion(){if(idx<round.length-1){idx++;load()}else{document.getElementById("prompt").textContent="Round complete 🎉";document.getElementById("greek").textContent="Choose another lesson or play a mixed review.";["choiceArea","puzzleArea","textArea","checkBtn","hintBtn","nextBtn"].forEach(id=>document.getElementById(id).classList.add("hidden"));document.getElementById("startBtn").textContent="Play again";document.getElementById("startBtn").classList.remove("hidden");save()}}
+
+function render(){
+ document.getElementById("xp").textContent=state.xp;document.getElementById("level").textContent=Math.floor(state.xp/200)+1;document.getElementById("hearts").textContent="❤️".repeat(state.hearts)+"🖤".repeat(5-state.hearts);document.getElementById("streak").textContent=state.streak+"🔥";document.getElementById("mastered").textContent=mastered();
+ document.getElementById("dailyBar").style.width=Math.min(100,state.today/20*100)+"%";document.getElementById("dailyText").textContent=`${state.today} / 20 questions today`;
+ let eb=document.getElementById("enemyBadges");eb.innerHTML="";Object.entries(state.mastery).sort((a,b)=>(b[1].misses-b[1].wins)-(a[1].misses-a[1].wins)).slice(0,6).forEach(([k,v])=>eb.innerHTML+=`<span class="badge">${v.wins>=3&&v.wins>v.misses?"✅":"👹"} ${k.replaceAll("_"," ")}</span>`);
+ let lt=document.getElementById("lessonList");lt.innerHTML="";for(const [name,[icon,desc]] of Object.entries(lessonInfo)){let count=Q.filter(q=>q.lesson===name).length;lt.innerHTML+=`<div class="lesson" onclick="chooseLesson('${name.replaceAll("'","\\'")}')"><b>${icon} ${name}</b><div class="muted">${desc} • ${count} challenges</div></div>`}
+ let tb=document.getElementById("enemyTable");tb.innerHTML="";Object.entries(state.mastery).sort((a,b)=>b[1].misses-a[1].misses).forEach(([k,v])=>tb.innerHTML+=`<tr><td>${k.replaceAll("_"," ")}</td><td>${v.cat}</td><td>${v.misses}</td><td>${v.wins}</td><td>${v.wins>=3&&v.wins>v.misses?"✅ Mastered":"👹 Active"}</td></tr>`);
+ let acc=state.answered?Math.round(state.correct/state.answered*100):0;document.getElementById("overall").innerHTML=`<p><b>${state.xp} XP</b></p><p>Answered: ${state.answered}</p><p>Accuracy: ${acc}%</p><p>Best streak: ${state.bestStreak}</p><p>Mastered skills: ${mastered()} / ${Object.keys(state.mastery).length}</p>`;
+ let sb=document.getElementById("skillBars");sb.innerHTML="";Object.entries(state.mastery).forEach(([k,v])=>{let pct=Math.min(100,Math.round(v.wins/3*100));sb.innerHTML+=`<div style="margin-bottom:9px"><div class="row" style="justify-content:space-between"><span>${k.replaceAll("_"," ")}</span><small>${v.wins}/3 wins</small></div><div class="progress"><div style="width:${pct}%"></div></div></div>`})
+}
+function chooseLesson(name){selectedLesson=name;show("play");document.getElementById("startBtn").textContent="Start "+name+" round";document.getElementById("startBtn").classList.remove("hidden");document.getElementById("lessonBadge").textContent=name}
+function exportData(){let blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="dutch-quest-v2-progress.json";a.click();URL.revokeObjectURL(u)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{state=JSON.parse(r.result);save();alert("Imported.")}catch{alert("Invalid file.")}};r.readAsText(f)}
+function resetData(){if(confirm("Reset all progress?")){state=structuredClone(initial);save();location.reload()}}
+function addCustom(){let p=document.getElementById("customPrompt").value.trim(),g=document.getElementById("customGreek").value.trim(),a=document.getElementById("customAnswer").value.trim(),tag=document.getElementById("customTag").value;if(!p||!a){alert("Add prompt and answer.");return}state.custom.push({lesson:"Custom",type:"text",prompt:"Translate: "+p,greek:g,answer:a,tag, hint:"Focus on "+tag.replaceAll("_"," ")});state.mastery[tag]=state.mastery[tag]||{misses:0,wins:0,cat:"Custom"};save();alert("Challenge added.")}
+render();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+</script>
+
+</body>
+</html>
