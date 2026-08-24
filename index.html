@@ -161,7 +161,7 @@ button,.token,.choice{touch-action:manipulation;-webkit-tap-highlight-color:tran
 
 <div class="card" style="margin-top:14px">
   <h3>⏱️ Study time</h3>
-  <p class="muted">Track active Dutch study time. Your totals are saved on this device and reset automatically each new day.</p>
+  <p class="muted">Time is tracked automatically while you actively use Dutch Quest. It pauses when the app is hidden or after 2 minutes without activity.</p>
 
   <div class="stats" style="max-width:none;margin-bottom:12px">
     <div class="stat">
@@ -175,14 +175,14 @@ button,.token,.choice{touch-action:manipulation;-webkit-tap-highlight-color:tran
   </div>
 
   <div class="row">
-    <button id="studyStartBtn" class="primary" onclick="toggleStudyTimer()">Start timer</button>
-    <button class="ghost" onclick="resetStudyTimer()">Reset session</button>
+    <span class="badge" id="studyAutoStatus">🟢 Auto timer active</span>
+    <button class="ghost" onclick="resetStudyTimer()">Reset today</button>
   </div>
 </div>
 
   <div class="row">
-    <button id="studyStartBtn" class="primary" onclick="toggleStudyTimer()">Start timer</button>
-    <button class="ghost" onclick="resetStudyTimer()">Reset session</button>
+    <span class="badge" id="studyAutoStatus">🟢 Auto timer active</span>
+    <button class="ghost" onclick="resetStudyTimer()">Reset today</button>
   </div>
 </div>
 
@@ -216,7 +216,6 @@ button,.token,.choice{touch-action:manipulation;-webkit-tap-highlight-color:tran
 
 <script>
 const lessonInfo={
-"B1 prompt pack":["✍️","daily translation prompts for active B1 production"],
 "Core vocabulary":["🧠","aanvankelijk, aarzeling, aandachtig, voorzichtig"],
 "Word order":["🔀","V2, time-first sentences, inversion"],
 "Subordinate clauses":["🧩","omdat, nadat, wanneer, hoewel, als"],
@@ -388,35 +387,87 @@ const Q=[
 ["B1 mixed", "text", "Translate: Initially I hesitated, but after speaking with my colleague I changed my mind.", "Αρχικά δίστασα, αλλά αφού μίλησα με τον συνάδελφό μου άλλαξα γνώμη.", "Aanvankelijk aarzelde ik, maar nadat ik met mijn collega had gesproken, veranderde ik van gedachten.", "b1_mixed", "van gedachten veranderen = change your mind.", []],
 ["B1 mixed", "puzzle", "Although the instructions were clear, I made a mistake because I worked too quickly.", "Αν και οι οδηγίες ήταν σαφείς, έκανα λάθος επειδή δούλεψα πολύ γρήγορα.", "Hoewel de aanwijzingen duidelijk waren, maakte ik een fout omdat ik te snel werkte.", "b1_mixed", "Two subordinate structures in one sentence.", ["hoewel", "de aanwijzingen", "duidelijk", "waren", "maakte", "ik", "een fout", "omdat", "ik", "te snel", "werkte"]],
 ["B1 mixed", "text", "Translate: If I do not understand the instructions, I ask the engineer for clarification.", "Αν δεν καταλαβαίνω τις οδηγίες, ζητώ διευκρίνιση από τον μηχανικό.", "Als ik de aanwijzingen niet begrijp, vraag ik de ingenieur om uitleg.", "b1_mixed", "Als-clause verb final, then inversion.", []],
-["B1 prompt pack", "text", "Translate: Initially, I found the new task difficult.", "Αρχικά βρήκα τη νέα εργασία δύσκολη.", "Aanvankelijk vond ik de nieuwe taak moeilijk.", "word_order", "Aanvankelijk first → V2 inversion."],
-["B1 prompt pack", "text", "Translate: Tomorrow I will work from home.", "Αύριο θα δουλέψω από το σπίτι.", "Morgen werk ik thuis.", "word_order", "Present tense is natural for a planned near future event."],
-["B1 prompt pack", "text", "Translate: Yesterday I spoke with the engineer.", "Χθες μίλησα με τον μηχανικό.", "Gisteren heb ik met de ingenieur gesproken.", "word_order", "Gisteren first → inversion."],
-["B1 prompt pack", "text", "Translate: Because the dimensions were wrong, I changed the drawing.", "Επειδή οι διαστάσεις ήταν λάθος, άλλαξα το σχέδιο.", "Omdat de afmetingen verkeerd waren, heb ik de tekening aangepast.", "subordinate_clause", "Omdat → verb final; main clause uses inversion."],
-["B1 prompt pack", "text", "Translate: After I had read the instructions, I started the work.", "Αφού διάβασα τις οδηγίες, άρχισα τη δουλειά.", "Nadat ik de aanwijzingen had gelezen, begon ik met het werk.", "subordinate_clause", "Nadat → verbs at the end."],
-["B1 prompt pack", "text", "Translate: Although I was tired, I finished the report.", "Αν και ήμουν κουρασμένος, τελείωσα την αναφορά.", "Hoewel ik moe was, heb ik het rapport afgemaakt.", "subordinate_clause", "Hoewel is a subordinate conjunction."],
-["B1 prompt pack", "text", "Translate: When I have time, I practise Dutch.", "Όταν έχω χρόνο, εξασκούμαι στα ολλανδικά.", "Wanneer ik tijd heb, oefen ik Nederlands.", "subordinate_clause", "Wanneer-clause verb final; then inversion."],
-["B1 prompt pack", "text", "Translate: I have checked the drawing carefully.", "Έλεγξα προσεκτικά το σχέδιο.", "Ik heb de tekening aandachtig gecontroleerd.", "perfect_tense", "hebben + participle."],
-["B1 prompt pack", "text", "Translate: I have lived in the Netherlands.", "Έχω ζήσει στην Ολλανδία.", "Ik heb in Nederland gewoond.", "perfect_tense", "wonen uses hebben."],
-["B1 prompt pack", "text", "Translate: I have completed the project.", "Ολοκλήρωσα το έργο.", "Ik heb het project afgerond.", "perfect_tense", "afronden → afgerond."],
-["B1 prompt pack", "text", "Translate: I adjust the drawing.", "Προσαρμόζω το σχέδιο.", "Ik pas de tekening aan.", "separable_verb", "aanpassen splits in a main clause."],
-["B1 prompt pack", "text", "Translate: I filled in the form yesterday.", "Συμπλήρωσα τη φόρμα χθες.", "Ik heb het formulier gisteren ingevuld.", "separable_verb", "invullen → ingevuld."],
-["B1 prompt pack", "text", "Translate: I am waiting for the bus.", "Περιμένω το λεωφορείο.", "Ik wacht op de bus.", "preposition", "wachten op."],
-["B1 prompt pack", "text", "Translate: I am interested in the project.", "Ενδιαφέρομαι για το έργο.", "Ik ben geïnteresseerd in het project.", "preposition", "geïnteresseerd in."],
-["B1 prompt pack", "text", "Translate: I adapted to the new working environment.", "Προσαρμόστηκα στο νέο εργασιακό περιβάλλον.", "Ik heb me aan de nieuwe werkomgeving aangepast.", "preposition", "zich aanpassen aan."],
-["B1 prompt pack", "text", "Translate: The drawing is checked by the engineer.", "Το σχέδιο ελέγχεται από τον μηχανικό.", "De tekening wordt door de ingenieur gecontroleerd.", "passive_voice", "worden + participle."],
-["B1 prompt pack", "text", "Translate: The man who helped me works here.", "Ο άντρας που με βοήθησε δουλεύει εδώ.", "De man die me geholpen heeft, werkt hier.", "relative_clause", "de man → die."],
-["B1 prompt pack", "text", "Translate: The project that started yesterday is important.", "Το έργο που ξεκίνησε χθες είναι σημαντικό.", "Het project dat gisteren begon, is belangrijk.", "relative_clause", "het project → dat."],
-["B1 prompt pack", "text", "Translate: I don’t know whether he is coming tomorrow.", "Δεν ξέρω αν έρχεται αύριο.", "Ik weet niet of hij morgen komt.", "indirect_question", "of + subject + verb final."],
-["B1 prompt pack", "text", "Translate: I don’t know where she works.", "Δεν ξέρω πού δουλεύει.", "Ik weet niet waar ze werkt.", "indirect_question", "Indirect question → verb final."],
-["B1 prompt pack", "text", "Translate: When I lived in the Netherlands, I cycled every day.", "Όταν ζούσα στην Ολλανδία, έκανα ποδήλατο κάθε μέρα.", "Toen ik in Nederland woonde, fietste ik elke dag.", "toen_als", "Specific past period → toen."],
-["B1 prompt pack", "text", "Translate: If I am tired, I go to bed early.", "Αν είμαι κουρασμένος, κοιμάμαι νωρίς.", "Als ik moe ben, ga ik vroeg naar bed.", "toen_als", "General/repeated condition → als."],
-["B1 prompt pack", "text", "Translate: I try to speak Dutch every day.", "Προσπαθώ να μιλάω ολλανδικά κάθε μέρα.", "Ik probeer elke dag Nederlands te spreken.", "te_infinitive", "proberen + te + infinitive."],
-["B1 prompt pack", "text", "Translate: I forgot to send the email.", "Ξέχασα να στείλω το email.", "Ik ben vergeten de e-mail te sturen.", "te_infinitive", "vergeten + te + infinitive."],
-["B1 prompt pack", "text", "Translate: I have two of them.", "Έχω δύο από αυτά.", "Ik heb er twee.", "er_number", "er before the quantity."],
-["B1 prompt pack", "text", "Translate: I am thinking about it.", "Το σκέφτομαι.", "Ik denk eraan.", "er_preposition", "denken aan → eraan."],
-["B1 prompt pack", "text", "Translate: I am waiting for it.", "Το περιμένω.", "Ik wacht erop.", "er_preposition", "wachten op → erop."],
-["B1 prompt pack", "text", "Translate: I am talking about it.", "Μιλάω γι’ αυτό.", "Ik praat erover.", "er_preposition", "praten over → erover."],
-["B1 prompt pack", "text", "Translate: I changed my mind after the meeting.", "Άλλαξα γνώμη μετά τη συνάντηση.", "Ik ben na de vergadering van gedachten veranderd.", "vocabulary", "van gedachten veranderen = change your mind."]
+["Word order", "text", "Translate: Initially, I found the new task difficult.", "Αρχικά βρήκα τη νέα εργασία δύσκολη.", "Aanvankelijk vond ik de nieuwe taak moeilijk.", "word_order", "Aanvankelijk first → V2 inversion."],
+["Word order", "text", "Translate: Tomorrow I will work from home.", "Αύριο θα δουλέψω από το σπίτι.", "Morgen werk ik thuis.", "word_order", "Present tense is natural for a planned near future event."],
+["Word order", "text", "Translate: Yesterday I spoke with the engineer.", "Χθες μίλησα με τον μηχανικό.", "Gisteren heb ik met de ingenieur gesproken.", "word_order", "Gisteren first → inversion."],
+["Subordinate clauses", "text", "Translate: Because the dimensions were wrong, I changed the drawing.", "Επειδή οι διαστάσεις ήταν λάθος, άλλαξα το σχέδιο.", "Omdat de afmetingen verkeerd waren, heb ik de tekening aangepast.", "subordinate_clause", "Omdat → verb final; main clause uses inversion."],
+["Subordinate clauses", "text", "Translate: After I had read the instructions, I started the work.", "Αφού διάβασα τις οδηγίες, άρχισα τη δουλειά.", "Nadat ik de aanwijzingen had gelezen, begon ik met het werk.", "subordinate_clause", "Nadat → verbs at the end."],
+["Subordinate clauses", "text", "Translate: Although I was tired, I finished the report.", "Αν και ήμουν κουρασμένος, τελείωσα την αναφορά.", "Hoewel ik moe was, heb ik het rapport afgemaakt.", "subordinate_clause", "Hoewel is a subordinate conjunction."],
+["Subordinate clauses", "text", "Translate: When I have time, I practise Dutch.", "Όταν έχω χρόνο, εξασκούμαι στα ολλανδικά.", "Wanneer ik tijd heb, oefen ik Nederlands.", "subordinate_clause", "Wanneer-clause verb final; then inversion."],
+["Perfect tense", "text", "Translate: I have checked the drawing carefully.", "Έλεγξα προσεκτικά το σχέδιο.", "Ik heb de tekening aandachtig gecontroleerd.", "perfect_tense", "hebben + participle."],
+["Perfect tense", "text", "Translate: I have lived in the Netherlands.", "Έχω ζήσει στην Ολλανδία.", "Ik heb in Nederland gewoond.", "perfect_tense", "wonen uses hebben."],
+["Perfect tense", "text", "Translate: I have completed the project.", "Ολοκλήρωσα το έργο.", "Ik heb het project afgerond.", "perfect_tense", "afronden → afgerond."],
+["Separable verbs", "text", "Translate: I adjust the drawing.", "Προσαρμόζω το σχέδιο.", "Ik pas de tekening aan.", "separable_verb", "aanpassen splits in a main clause."],
+["Separable verbs", "text", "Translate: I filled in the form yesterday.", "Συμπλήρωσα τη φόρμα χθες.", "Ik heb het formulier gisteren ingevuld.", "separable_verb", "invullen → ingevuld."],
+["ER + preposition", "text", "Translate: I am waiting for the bus.", "Περιμένω το λεωφορείο.", "Ik wacht op de bus.", "preposition", "wachten op."],
+["ER + preposition", "text", "Translate: I am interested in the project.", "Ενδιαφέρομαι για το έργο.", "Ik ben geïnteresseerd in het project.", "preposition", "geïnteresseerd in."],
+["ER + preposition", "text", "Translate: I adapted to the new working environment.", "Προσαρμόστηκα στο νέο εργασιακό περιβάλλον.", "Ik heb me aan de nieuwe werkomgeving aangepast.", "preposition", "zich aanpassen aan."],
+["Passive voice", "text", "Translate: The drawing is checked by the engineer.", "Το σχέδιο ελέγχεται από τον μηχανικό.", "De tekening wordt door de ingenieur gecontroleerd.", "passive_voice", "worden + participle."],
+["Relative clauses", "text", "Translate: The man who helped me works here.", "Ο άντρας που με βοήθησε δουλεύει εδώ.", "De man die me geholpen heeft, werkt hier.", "relative_clause", "de man → die."],
+["Relative clauses", "text", "Translate: The project that started yesterday is important.", "Το έργο που ξεκίνησε χθες είναι σημαντικό.", "Het project dat gisteren begon, is belangrijk.", "relative_clause", "het project → dat."],
+["Indirect questions", "text", "Translate: I don’t know whether he is coming tomorrow.", "Δεν ξέρω αν έρχεται αύριο.", "Ik weet niet of hij morgen komt.", "indirect_question", "of + subject + verb final."],
+["Indirect questions", "text", "Translate: I don’t know where she works.", "Δεν ξέρω πού δουλεύει.", "Ik weet niet waar ze werkt.", "indirect_question", "Indirect question → verb final."],
+["Toen vs als", "text", "Translate: When I lived in the Netherlands, I cycled every day.", "Όταν ζούσα στην Ολλανδία, έκανα ποδήλατο κάθε μέρα.", "Toen ik in Nederland woonde, fietste ik elke dag.", "toen_als", "Specific past period → toen."],
+["Toen vs als", "text", "Translate: If I am tired, I go to bed early.", "Αν είμαι κουρασμένος, κοιμάμαι νωρίς.", "Als ik moe ben, ga ik vroeg naar bed.", "toen_als", "General/repeated condition → als."],
+["TE + infinitive", "text", "Translate: I try to speak Dutch every day.", "Προσπαθώ να μιλάω ολλανδικά κάθε μέρα.", "Ik probeer elke dag Nederlands te spreken.", "te_infinitive", "proberen + te + infinitive."],
+["TE + infinitive", "text", "Translate: I forgot to send the email.", "Ξέχασα να στείλω το email.", "Ik ben vergeten de e-mail te sturen.", "te_infinitive", "vergeten + te + infinitive."],
+["ER + number", "text", "Translate: I have two of them.", "Έχω δύο από αυτά.", "Ik heb er twee.", "er_number", "er before the quantity."],
+["ER + preposition", "text", "Translate: I am thinking about it.", "Το σκέφτομαι.", "Ik denk eraan.", "er_preposition", "denken aan → eraan."],
+["ER + preposition", "text", "Translate: I am waiting for it.", "Το περιμένω.", "Ik wacht erop.", "er_preposition", "wachten op → erop."],
+["ER + preposition", "text", "Translate: I am talking about it.", "Μιλάω γι’ αυτό.", "Ik praat erover.", "er_preposition", "praten over → erover."],
+["B1 mixed", "text", "Translate: I changed my mind after the meeting.", "Άλλαξα γνώμη μετά τη συνάντηση.", "Ik ben na de vergadering van gedachten veranderd.", "vocabulary", "van gedachten veranderen = change your mind."],
+["Word order", "text", "Translate: After work I usually go to the gym.", "Μετά τη δουλειά συνήθως πηγαίνω στο γυμναστήριο.", "Na het werk ga ik meestal naar de sportschool.", "word_order", "Phrase first → verb before subject."],
+["Word order", "puzzle", "In the afternoon I often check my email.", "Το απόγευμα ελέγχω συχνά το email μου.", "'s Middags controleer ik vaak mijn e-mail.", "word_order", "Time phrase first → V2.", ["'s middags", "controleer", "ik", "vaak", "mijn e-mail"]],
+["Word order", "text", "Translate: At the moment I am working on a new drawing.", "Αυτή τη στιγμή δουλεύω σε ένα νέο σχέδιο.", "Op dit moment werk ik aan een nieuwe tekening.", "word_order", "Fronted phrase → inversion."],
+["Subordinate clauses", "text", "Translate: I stayed longer because the report was not finished.", "Έμεινα περισσότερο επειδή η αναφορά δεν είχε τελειώσει.", "Ik bleef langer omdat het rapport nog niet af was.", "subordinate_clause", "Omdat → verb final."],
+["Subordinate clauses", "text", "Translate: Before I send the drawing, I check the dimensions again.", "Πριν στείλω το σχέδιο, ελέγχω ξανά τις διαστάσεις.", "Voordat ik de tekening verstuur, controleer ik de afmetingen opnieuw.", "subordinate_clause", "Voordat clause → verb final; then inversion."],
+["Subordinate clauses", "puzzle", "Since I started this job, I have learned a lot.", "Από τότε που ξεκίνησα αυτή τη δουλειά, έχω μάθει πολλά.", "Sinds ik met deze baan ben begonnen, heb ik veel geleerd.", "subordinate_clause", "Sinds clause → verb cluster at end.", ["sinds", "ik", "met deze baan", "ben begonnen", "heb", "ik", "veel", "geleerd"]],
+["Perfect tense", "text", "Translate: I have already sent the documents.", "Έχω ήδη στείλει τα έγγραφα.", "Ik heb de documenten al verstuurd.", "perfect_tense", "hebben + participle."],
+["Perfect tense", "choice", "Choose the correct form of 'beginnen'.", "Διάλεξε τη σωστή μορφή.", "begonnen", "perfect_tense", "beginnen → begonnen.", ["gebegonnen", "begonnen", "begint"]],
+["Perfect tense", "text", "Translate: We have discussed the problem with the manager.", "Συζητήσαμε το πρόβλημα με τον διευθυντή.", "We hebben het probleem met de manager besproken.", "perfect_tense", "bespreken → besproken."],
+["Separable verbs", "text", "Translate: I turn on the computer every morning.", "Ανοίγω τον υπολογιστή κάθε πρωί.", "Ik zet de computer elke ochtend aan.", "separable_verb", "aanzetten → zet ... aan."],
+["Separable verbs", "text", "Translate: We postponed the meeting.", "Αναβάλαμε τη συνάντηση.", "We hebben de vergadering uitgesteld.", "separable_verb", "uitstellen → uitgesteld."],
+["Separable verbs", "puzzle", "Please send the form back today.", "Στείλε πίσω τη φόρμα σήμερα, παρακαλώ.", "Stuur het formulier vandaag terug.", "separable_verb", "terugsturen → stuur ... terug.", ["stuur", "het formulier", "vandaag", "terug"]],
+["ER + preposition", "choice", "Ik denk aan mijn afspraak. → Ik denk ___.", "Σκέφτομαι το ραντεβού μου.", "eraan", "er_preposition", "aan → eraan.", ["eraan", "erover", "ermee"]],
+["ER + preposition", "choice", "We praten over het probleem. → We praten ___.", "Μιλάμε γι' αυτό.", "erover", "er_preposition", "over → erover.", ["eraan", "erover", "erop"]],
+["ER + preposition", "text", "Translate: I am working on it.", "Δουλεύω πάνω σε αυτό.", "Ik werk eraan.", "er_preposition", "werken aan → eraan."],
+["ER + preposition", "choice", "Ik ben tevreden met het resultaat. → Ik ben ___ tevreden.", "Είμαι ικανοποιημένος με αυτό.", "ermee", "er_preposition", "met → ermee.", ["ermee", "eraan", "ervoor"]],
+["ER + number", "text", "Translate: We need five of them.", "Χρειαζόμαστε πέντε από αυτά.", "We hebben er vijf nodig.", "er_number", "er before quantity."],
+["ER + number", "puzzle", "There are three left.", "Έχουν μείνει τρία.", "Er zijn er nog drie over.", "er_number", "First er = existential; second er replaces the noun.", ["er", "zijn", "er", "nog", "drie", "over"]],
+["Passive voice", "text", "Translate: The documents are stored digitally.", "Τα έγγραφα αποθηκεύονται ψηφιακά.", "De documenten worden digitaal opgeslagen.", "passive_voice", "worden + participle."],
+["Passive voice", "text", "Translate: The problem was solved yesterday.", "Το πρόβλημα λύθηκε χθες.", "Het probleem werd gisteren opgelost.", "passive_voice", "Past passive = werd/werden + participle."],
+["Relative clauses", "choice", "De vrouw ___ daar staat, is mijn collega.", "Η γυναίκα που στέκεται εκεί...", "die", "relative_clause", "de vrouw → die.", ["die", "dat", "wat"]],
+["Relative clauses", "choice", "Het plan ___ we bespreken, is nog niet definitief.", "Το σχέδιο που συζητάμε...", "dat", "relative_clause", "het plan → dat.", ["die", "dat", "wie"]],
+["Relative clauses", "text", "Translate: The colleague who sent the email is absent today.", "Ο συνάδελφος που έστειλε το email λείπει σήμερα.", "De collega die de e-mail heeft gestuurd, is vandaag afwezig.", "relative_clause", "de collega → die."],
+["Indirect questions", "text", "Translate: I don't know when the train leaves.", "Δεν ξέρω πότε φεύγει το τρένο.", "Ik weet niet wanneer de trein vertrekt.", "indirect_question", "Indirect clause: subject before verb."],
+["Indirect questions", "text", "Translate: Do you know why the project was delayed?", "Ξέρεις γιατί καθυστέρησε το έργο;", "Weet je waarom het project vertraging heeft opgelopen?", "indirect_question", "waarom clause → verb cluster at end."],
+["Toen vs als", "choice", "___ ik jonger was, woonde ik in Griekenland.", "Όταν ήμουν νεότερος...", "Toen", "toen_als", "Past period → toen.", ["Toen", "Als"]],
+["Toen vs als", "choice", "___ het morgen regent, neem ik de bus.", "Αν βρέχει αύριο...", "Als", "toen_als", "Future condition → als.", ["Toen", "Als"]],
+["Toen vs als", "text", "Translate: When I arrived, the meeting had already started.", "Όταν έφτασα, η συνάντηση είχε ήδη αρχίσει.", "Toen ik aankwam, was de vergadering al begonnen.", "toen_als", "Specific past event → toen."],
+["TE + infinitive", "text", "Translate: I hope to finish the report today.", "Ελπίζω να τελειώσω την αναφορά σήμερα.", "Ik hoop het rapport vandaag af te maken.", "te_infinitive", "hopen + te; separable infinitive → af te maken."],
+["TE + infinitive", "choice", "Ik probeer op tijd ___.", "Προσπαθώ να φτάσω στην ώρα μου.", "te komen", "te_infinitive", "proberen + te.", ["komen", "te komen", "gekomen"]],
+["TE + infinitive", "text", "Translate: I forgot to bring the document.", "Ξέχασα να φέρω το έγγραφο.", "Ik ben vergeten het document mee te nemen.", "te_infinitive", "meenemen → mee te nemen."],
+["Pronouns & order", "text", "Translate: I showed it to him yesterday.", "Του το έδειξα χθες.", "Ik heb het hem gisteren laten zien.", "pronoun_order", "het + hem before time phrase."],
+["Comparison dan/als", "choice", "Mijn nieuwe fiets is lichter ___ mijn oude fiets.", "Το νέο μου ποδήλατο είναι ελαφρύτερο από το παλιό.", "dan", "comparison", "Comparative → dan.", ["dan", "als"]],
+["Comparison dan/als", "text", "Translate: This report is just as important as the previous one.", "Αυτή η αναφορά είναι εξίσου σημαντική με την προηγούμενη.", "Dit rapport is even belangrijk als het vorige.", "comparison", "even ... als."],
+["Comparison dan/als", "choice", "Deze route is minder druk ___ die route.", "Αυτή η διαδρομή έχει λιγότερη κίνηση από εκείνη.", "dan", "comparison", "less/more + adjective → dan.", ["als", "dan"]],
+["Modal particles", "choice", "Wacht ___ even.", "Περίμενε λίγο.", "maar", "modal_particles", "maar softens the imperative.", ["maar", "wel", "toch"]],
+["Modal particles", "choice", "Dat lukt ___!", "Θα τα καταφέρεις!", "wel", "modal_particles", "wel adds reassurance/confidence.", ["even", "maar", "wel"]],
+["Modal particles", "text", "Translate: Just have a look at this document.", "Ρίξε απλώς μια ματιά σε αυτό το έγγραφο.", "Kijk maar even naar dit document.", "modal_particles", "maar even softens the request."],
+["Work & CAD", "text", "Translate: I updated the drawing after receiving the new dimensions.", "Ενημέρωσα το σχέδιο αφού έλαβα τις νέες διαστάσεις.", "Ik heb de tekening bijgewerkt nadat ik de nieuwe afmetingen had ontvangen.", "cad_vocab", "bijwerken + nadat-clause."],
+["Work & CAD", "choice", "What is 'drawing register' in Dutch?", "Πώς λέγεται το μητρώο σχεδίων στα ολλανδικά;", "tekeningenregister", "cad_vocab", "tekeningenregister = drawing register.", ["tekeningenregister", "voorraadlijst", "bestellijst"]],
+["Work & CAD", "text", "Translate: The revision number must be shown on the drawing.", "Ο αριθμός αναθεώρησης πρέπει να φαίνεται στο σχέδιο.", "Het revisienummer moet op de tekening worden vermeld.", "cad_vocab", "modal + passive infinitive."],
+["Work & CAD", "choice", "Which word means 'layer' in CAD?", "Ποια λέξη σημαίνει layer στο CAD;", "laag", "cad_vocab", "laag = layer.", ["laag", "lijn", "vlak"]],
+["Work & CAD", "text", "Translate: I compared the old drawing with the new version.", "Σύγκρινα το παλιό σχέδιο με τη νέα έκδοση.", "Ik heb de oude tekening met de nieuwe versie vergeleken.", "cad_vocab", "vergelijken met."],
+["Logistics & daily work", "text", "Translate: The supplier has confirmed the delivery date.", "Ο προμηθευτής επιβεβαίωσε την ημερομηνία παράδοσης.", "De leverancier heeft de leverdatum bevestigd.", "logistics_vocab", "leverdatum = delivery date."],
+["Logistics & daily work", "choice", "Which means 'stock shortage'?", "Ποιο σημαίνει έλλειψη αποθέματος;", "voorraadtekort", "logistics_vocab", "voorraadtekort = stock shortage.", ["voorraadtekort", "bestelnummer", "leverdatum"]],
+["Logistics & daily work", "text", "Translate: We need to reorder the missing items.", "Πρέπει να ξαναπαραγγείλουμε τα αντικείμενα που λείπουν.", "We moeten de ontbrekende artikelen opnieuw bestellen.", "logistics_vocab", "opnieuw bestellen = reorder."],
+["Logistics & daily work", "text", "Translate: The shipment arrived later than expected.", "Η αποστολή έφτασε αργότερα από το αναμενόμενο.", "De zending kwam later aan dan verwacht.", "logistics_vocab", "aankomen splits; comparative uses dan."],
+["Logistics & daily work", "choice", "Which word means 'shipment'?", "Ποια λέξη σημαίνει αποστολή;", "zending", "logistics_vocab", "zending = shipment.", ["zending", "meting", "aanwijzing"]],
+["B1 mixed", "text", "Translate: Although I had little time, I carefully checked the document before I sent it.", "Αν και είχα λίγο χρόνο, έλεγξα προσεκτικά το έγγραφο πριν το στείλω.", "Hoewel ik weinig tijd had, controleerde ik het document aandachtig voordat ik het verstuurde.", "b1_mixed", "Combine hoewel + inversion + voordat."],
+["B1 mixed", "text", "Translate: If the supplier does not deliver on time, the planning will have to be adjusted.", "Αν ο προμηθευτής δεν παραδώσει εγκαίρως, ο προγραμματισμός θα πρέπει να προσαρμοστεί.", "Als de leverancier niet op tijd levert, moet de planning worden aangepast.", "b1_mixed", "Als + passive with modal."],
+["B1 mixed", "puzzle", "After the engineer had approved the drawing, I sent it to the client.", "Αφού ο μηχανικός ενέκρινε το σχέδιο, το έστειλα στον πελάτη.", "Nadat de ingenieur de tekening had goedgekeurd, heb ik die naar de klant gestuurd.", "b1_mixed", "Nadat + past perfect; then inversion.", ["nadat", "de ingenieur", "de tekening", "had goedgekeurd", "heb", "ik", "die", "naar de klant", "gestuurd"]],
+["B1 mixed", "text", "Translate: I am not sure whether I understood the instructions correctly.", "Δεν είμαι σίγουρος αν κατάλαβα σωστά τις οδηγίες.", "Ik weet niet zeker of ik de aanwijzingen goed heb begrepen.", "b1_mixed", "Indirect of-clause → verb cluster at end."]
 ].map(a=>({lesson:a[0],type:a[1],prompt:a[2],greek:a[3],answer:a[4],tag:a[5],hint:a[6],options:a[7],words:a[1]==="puzzle"?a[7]:undefined}));
 
 const initial={xp:120,streak:0,bestStreak:0,answered:0,correct:0,today:0,date:new Date().toDateString(),b1Plan:{date:new Date().toDateString(),tasks:[false,false,false,false,false,false]},study:{date:new Date().toDateString(),totalSeconds:0,sessionSeconds:0,running:false,lastTick:null},custom:[],mastery:{}};
@@ -437,9 +488,6 @@ if(!state.b1Plan || state.b1Plan.date!==new Date().toDateString()){
 }
 if(!state.study || state.study.date!==new Date().toDateString()){
   state.study={date:new Date().toDateString(),totalSeconds:0,sessionSeconds:0,running:false,lastTick:null};
-}else{
-  state.study.running=false;
-  state.study.lastTick=null;
 }
 let selectedLesson="Mixed Review", round=[], idx=0, selected=[], chosen="", checked=false, hintUsed=false;
 
@@ -495,6 +543,8 @@ function nextQuestion(){if(idx<round.length-1){idx++;load()}else{document.getEle
 
 
 let studyInterval=null;
+let lastStudyActivity=Date.now();
+const STUDY_IDLE_LIMIT=120000; // 2 minutes
 
 function formatStudyTime(sec){
   sec=Math.max(0,Math.floor(sec||0));
@@ -504,61 +554,75 @@ function formatStudyTime(sec){
   return `${h}:${m}:${s}`;
 }
 
-function renderStudyTimer(){
-  if(!state.study || state.study.date!==new Date().toDateString()){
-    state.study={date:new Date().toDateString(),totalSeconds:0,sessionSeconds:0,running:false,lastTick:null};
+function ensureStudyState(){
+  const d=new Date().toDateString();
+  if(!state.study || state.study.date!==d){
+    state.study={date:d,totalSeconds:0,sessionSeconds:0,running:false,lastTick:null};
   }
+}
+
+function isStudyActive(){
+  return !document.hidden && (Date.now()-lastStudyActivity)<STUDY_IDLE_LIMIT;
+}
+
+function renderStudyTimer(){
+  ensureStudyState();
   const clock=document.getElementById("studyClock");
   const today=document.getElementById("studyToday");
-  const btn=document.getElementById("studyStartBtn");
+  const status=document.getElementById("studyAutoStatus");
   if(clock) clock.textContent=formatStudyTime(state.study.sessionSeconds);
   if(today){
     const mins=Math.floor(state.study.totalSeconds/60);
     today.textContent=mins+" min";
   }
-  if(btn) btn.textContent=state.study.running?"Pause timer":"Start timer";
+  if(status){
+    if(document.hidden) status.textContent="⏸️ Paused — app hidden";
+    else if((Date.now()-lastStudyActivity)>=STUDY_IDLE_LIMIT) status.textContent="⏸️ Paused — inactive";
+    else status.textContent="🟢 Auto timer active";
+  }
 }
 
 function studyTick(){
-  if(!state.study.running)return;
+  ensureStudyState();
   const now=Date.now();
-  if(!state.study.lastTick)state.study.lastTick=now;
-  const elapsed=Math.max(0,Math.floor((now-state.study.lastTick)/1000));
-  if(elapsed>0){
-    state.study.sessionSeconds+=elapsed;
-    state.study.totalSeconds+=elapsed;
-    state.study.lastTick=now;
-    localStorage.setItem("dqv3",JSON.stringify(state));
-    renderStudyTimer();
+  const active=isStudyActive();
+  if(active){
+    state.study.running=true;
+    state.study.sessionSeconds+=1;
+    state.study.totalSeconds+=1;
+  }else{
+    state.study.running=false;
   }
+  state.study.lastTick=now;
+  if(now%5<1000) localStorage.setItem("dqv3",JSON.stringify(state));
+  renderStudyTimer();
 }
 
-function toggleStudyTimer(){
-  if(!state.study || state.study.date!==new Date().toDateString()){
-    state.study={date:new Date().toDateString(),totalSeconds:0,sessionSeconds:0,running:false,lastTick:null};
-  }
-  state.study.running=!state.study.running;
-  state.study.lastTick=state.study.running?Date.now():null;
-  if(state.study.running){
-    if(studyInterval)clearInterval(studyInterval);
-    studyInterval=setInterval(studyTick,1000);
-  }else if(studyInterval){
-    clearInterval(studyInterval);
-    studyInterval=null;
-  }
-  localStorage.setItem("dqv3",JSON.stringify(state));
+function registerStudyActivity(){
+  lastStudyActivity=Date.now();
+  ensureStudyState();
+  state.study.running=true;
   renderStudyTimer();
 }
 
 function resetStudyTimer(){
-  if(!state.study)return;
+  ensureStudyState();
+  state.study.totalSeconds=0;
   state.study.sessionSeconds=0;
-  state.study.running=false;
-  state.study.lastTick=null;
-  if(studyInterval){clearInterval(studyInterval);studyInterval=null;}
+  state.study.lastTick=Date.now();
   localStorage.setItem("dqv3",JSON.stringify(state));
   renderStudyTimer();
 }
+
+["click","keydown","touchstart","input"].forEach(evt=>{
+  document.addEventListener(evt,registerStudyActivity,{passive:true});
+});
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden) registerStudyActivity();
+  else renderStudyTimer();
+});
+studyInterval=setInterval(studyTick,1000);
+registerStudyActivity();
 
 function toggleB1Task(i,checked){
   if(!state.b1Plan || state.b1Plan.date!==new Date().toDateString()){
