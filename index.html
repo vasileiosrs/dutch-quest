@@ -9,7 +9,7 @@
 *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
 .app{max-width:1100px;margin:auto;padding:20px} header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
 h1,h2,h3{margin-top:0}.sub,.muted,small{color:var(--muted)}
-.stats{display:grid;grid-template-columns:repeat(5,minmax(85px,1fr));gap:8px;flex:1;max-width:640px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(85px,1fr));gap:8px;flex:1;max-width:640px}
 .card,.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 3px 14px rgba(16,24,40,.04)}
 .stat{padding:10px;text-align:center}.stat b{display:block;font-size:18px}.stat span{font-size:11px;color:var(--muted)}
 .nav,.row,.bank{display:flex;gap:8px;flex-wrap:wrap}.nav{margin:18px 0}
@@ -59,7 +59,6 @@ button,.token,.choice{touch-action:manipulation;-webkit-tap-highlight-color:tran
   <div class="stats">
     <div class="stat"><b id="xp">0</b><span>XP</span></div>
     <div class="stat"><b id="level">1</b><span>Level</span></div>
-    <div class="stat"><b id="hearts">❤️❤️❤️❤️❤️</b><span>Hearts</span></div>
     <div class="stat"><b id="streak">0🔥</b><span>Streak</span></div>
     <div class="stat"><b id="mastered">0</b><span>Mastered</span></div>
   </div>
@@ -69,6 +68,7 @@ button,.token,.choice{touch-action:manipulation;-webkit-tap-highlight-color:tran
 <button class="primary" onclick="show('play')">Play</button>
 <button class="ghost" onclick="show('lessons')">Lessons</button>
 <button class="ghost" onclick="show('enemies')">Enemy list</button>
+<button class="ghost" onclick="show('today')">Today</button>
 <button class="ghost" onclick="show('progress')">Progress</button>
 <button class="ghost" onclick="show('data')">Data</button>
 </div>
@@ -106,6 +106,58 @@ button,.token,.choice{touch-action:manipulation;-webkit-tap-highlight-color:tran
 <section id="enemies" class="view hidden">
 <div class="card"><h2>👹 Enemy words & grammar</h2>
 <table><thead><tr><th>Skill</th><th>Category</th><th>Misses</th><th>Wins</th><th>Status</th></tr></thead><tbody id="enemyTable"></tbody></table></div>
+</section>
+
+
+<section id="today" class="view hidden">
+<div class="card">
+  <h2>🎯 Today’s B1 Plan</h2>
+  <p class="muted">Six tasks aimed at functional B1. The checklist resets automatically each new day.</p>
+  <div class="progress" style="margin:12px 0"><div id="b1PlanBar" style="width:0%"></div></div>
+  <h3 id="b1PlanCount">0 / 6 completed</h3>
+
+  <div id="b1Checklist">
+    <label class="lesson" style="display:block">
+      <input type="checkbox" data-b1task="0" onchange="toggleB1Task(0,this.checked)" style="width:auto;margin-right:8px">
+      <b>1. Word order drill — 15 min</b>
+      <div class="muted" style="margin-left:28px">10 sentences: time-first inversion, omdat, nadat and wanneer.</div>
+    </label>
+
+    <label class="lesson" style="display:block">
+      <input type="checkbox" data-b1task="1" onchange="toggleB1Task(1,this.checked)" style="width:auto;margin-right:8px">
+      <b>2. Dutch Quest — 20 questions</b>
+      <div class="muted" style="margin-left:28px">Prioritise word order, subordinate clauses, perfect tense and separable verbs.</div>
+    </label>
+
+    <label class="lesson" style="display:block">
+      <input type="checkbox" data-b1task="2" onchange="toggleB1Task(2,this.checked)" style="width:auto;margin-right:8px">
+      <b>3. Active vocabulary — 10 words</b>
+      <div class="muted" style="margin-left:28px">Use difficult words actively: aanvankelijk, aarzelen, aarzeling, aandachtig, voorzichtig, aanpassen, afmetingen, aanwijzingen.</div>
+    </label>
+
+    <label class="lesson" style="display:block">
+      <input type="checkbox" data-b1task="3" onchange="toggleB1Task(3,this.checked)" style="width:auto;margin-right:8px">
+      <b>4. Writing — 8 sentences</b>
+      <div class="muted" style="margin-left:28px">Include 2× omdat, 2× inversion, 1× nadat, 1× perfect tense and 1× separable verb.</div>
+    </label>
+
+    <label class="lesson" style="display:block">
+      <input type="checkbox" data-b1task="4" onchange="toggleB1Task(4,this.checked)" style="width:auto;margin-right:8px">
+      <b>5. Speaking — 10 min</b>
+      <div class="muted" style="margin-left:28px">Speak aloud: “Wat doe ik op mijn werk en welke problemen kom ik tegen?”</div>
+    </label>
+
+    <label class="lesson" style="display:block">
+      <input type="checkbox" data-b1task="5" onchange="toggleB1Task(5,this.checked)" style="width:auto;margin-right:8px">
+      <b>6. Error review — 10 min</b>
+      <div class="muted" style="margin-left:28px">Redo today’s mistakes until the correct structure comes without a hint.</div>
+    </label>
+  </div>
+
+  <div class="feedback ok" style="margin-top:14px">
+    <b>Daily target:</b> 4/6 minimum • 5/6 strong B1-training day • 6/6 excellent
+  </div>
+</div>
 </section>
 
 <section id="progress" class="view hidden">
@@ -247,10 +299,68 @@ const Q=[
 ["B1 mixed","puzzle","Because his car is parked incorrectly, he gets a fine.","Επειδή το αυτοκίνητό του είναι παρκαρισμένο λάθος, παίρνει πρόστιμο.","Omdat zijn auto fout geparkeerd staat, krijgt hij een boete.","b1_mixed","omdat clause verb-final, then inversion.",["omdat","zijn auto","fout geparkeerd","staat","krijgt","hij","een boete"]],
 ["B1 mixed","puzzle","I have thought for a long time that I would never learn Dutch.","Για πολύ καιρό πίστευα ότι δεν θα μάθαινα ολλανδικά.","Ik heb lang gedacht dat ik geen Nederlands zou leren.","b1_mixed","dat clause → verb group at the end.",["ik","heb","lang","gedacht","dat","ik","geen Nederlands","zou leren"]],
 ["B1 mixed","puzzle","If you take an aspirin, the headache will go away.","Αν πάρεις ασπιρίνη, ο πονοκέφαλος θα περάσει.","Als je een aspirientje neemt, dan gaat de hoofdpijn over.","b1_mixed","Als clause verb-final; main clause inversion.",["als","je","een aspirientje","neemt","dan","gaat","de hoofdpijn","over"]]
-
+,
+["Word order", "puzzle", "This morning I checked the drawings first.", "Σήμερα το πρωί έλεγξα πρώτα τα σχέδια.", "Vanmorgen controleerde ik eerst de tekeningen.", "word_order", "Time phrase first → verb before subject.", ["vanmorgen", "controleerde", "ik", "eerst", "de tekeningen"]],
+["Word order", "puzzle", "Next week I start a new project.", "Την επόμενη εβδομάδα ξεκινώ ένα νέο έργο.", "Volgende week begin ik aan een nieuw project.", "word_order", "Time first → inversion.", ["volgende week", "begin", "ik", "aan", "een nieuw project"]],
+["Word order", "choice", "Choose the correct sentence.", "Διάλεξε τη σωστή πρόταση.", "Daarom heb ik de tekening aangepast.", "word_order", "Daarom occupies position 1 → verb before subject.", ["Daarom ik heb de tekening aangepast.", "Daarom heb ik de tekening aangepast."]],
+["Word order", "choice", "Choose the correct sentence.", "Διάλεξε τη σωστή πρόταση.", "Gisteren heb ik met de ingenieur gesproken.", "word_order", "Gisteren first → V2 inversion.", ["Gisteren ik heb met de ingenieur gesproken.", "Gisteren heb ik met de ingenieur gesproken."]],
+["Subordinate clauses", "puzzle", "Because the dimensions were wrong, I changed the drawing.", "Επειδή οι διαστάσεις ήταν λάθος, άλλαξα το σχέδιο.", "Omdat de afmetingen verkeerd waren, heb ik de tekening aangepast.", "subordinate_clause", "Omdat → conjugated verb at the end.", ["omdat", "de afmetingen", "verkeerd", "waren", "heb", "ik", "de tekening", "aangepast"]],
+["Subordinate clauses", "puzzle", "Although I was tired, I finished the work.", "Αν και ήμουν κουρασμένος, τελείωσα τη δουλειά.", "Hoewel ik moe was, heb ik het werk afgemaakt.", "subordinate_clause", "Hoewel is a subordinate conjunction.", ["hoewel", "ik", "moe", "was", "heb", "ik", "het werk", "afgemaakt"]],
+["Subordinate clauses", "choice", "Choose the correct sentence.", "Διάλεξε τη σωστή πρόταση.", "Ik blijf thuis omdat ik ziek ben.", "subordinate_clause", "Omdat-clause → verb final.", ["Ik blijf thuis omdat ik ben ziek.", "Ik blijf thuis omdat ik ziek ben."]],
+["Subordinate clauses", "puzzle", "When the meeting is finished, I will call you.", "Όταν τελειώσει η συνάντηση, θα σε πάρω τηλέφωνο.", "Wanneer de vergadering afgelopen is, bel ik je.", "subordinate_clause", "First clause subordinate; main clause then inversion.", ["wanneer", "de vergadering", "afgelopen", "is", "bel", "ik", "je"]],
+["Perfect tense", "choice", "Ik heb het project ___.", "Έχω ολοκληρώσει το έργο.", "afgerond", "perfect_tense", "afronden → afgerond.", ["afronden", "afgerond", "rondde af"]],
+["Perfect tense", "choice", "We hebben de bestanden ___.", "Έχουμε αποθηκεύσει τα αρχεία.", "opgeslagen", "perfect_tense", "opslaan → opgeslagen.", ["opslaan", "opgeslagen", "geslaan"]],
+["Perfect tense", "text", "Translate: I have sent the revised drawing.", "Έχω στείλει το αναθεωρημένο σχέδιο.", "Ik heb de herziene tekening gestuurd.", "perfect_tense", "hebben + past participle.", []],
+["Perfect tense", "choice", "Which is correct?", "Ποιο είναι σωστό;", "Ik ben naar Nederland verhuisd.", "perfect_auxiliary", "Movement/change of state with verhuizen → zijn.", ["Ik heb naar Nederland verhuisd.", "Ik ben naar Nederland verhuisd."]],
+["Separable verbs", "puzzle", "I finish the report today.", "Ολοκληρώνω την αναφορά σήμερα.", "Ik rond het rapport vandaag af.", "separable_verb", "afronden splits in the main clause.", ["ik", "rond", "het rapport", "vandaag", "af"]],
+["Separable verbs", "puzzle", "I look up the information.", "Ψάχνω τις πληροφορίες.", "Ik zoek de informatie op.", "separable_verb", "opzoeken → zoek ... op.", ["ik", "zoek", "de informatie", "op"]],
+["Separable verbs", "choice", "Which is correct?", "Ποιο είναι σωστό;", "Ik heb het formulier ingevuld.", "separable_verb", "invullen → ingevuld.", ["Ik heb het formulier in gevuld.", "Ik heb het formulier ingevuld."]],
+["Separable verbs", "text", "Translate: I will call him back later.", "Θα τον πάρω πίσω αργότερα.", "Ik bel hem later terug.", "separable_verb", "terugbellen → bel ... terug.", []],
+["ER + preposition", "choice", "Ik ben geïnteresseerd in dit project. → Ik ben ___ geïnteresseerd.", "Με ενδιαφέρει αυτό το έργο.", "erin", "er_preposition", "in → erin.", ["erin", "eraan", "ervoor"]],
+["ER + preposition", "choice", "Ik zorg voor de planning. → Ik zorg ___.", "Φροντίζω για τον προγραμματισμό.", "ervoor", "er_preposition", "voor → ervoor.", ["ervoor", "erover", "ernaar"]],
+["ER + preposition", "choice", "Ik kijk naar het ontwerp. → Ik kijk ___.", "Κοιτάζω το σχέδιο.", "ernaar", "er_preposition", "naar → ernaar.", ["ernaar", "erop", "erin"]],
+["ER + preposition", "choice", "Ik kom uit Griekenland. → Ik kom ___.", "Κατάγομαι από εκεί.", "eruit", "er_preposition", "uit → eruit.", ["eruit", "erin", "eraan"]],
+["ER + number", "puzzle", "I need three of them.", "Χρειάζομαι τρία από αυτά.", "Ik heb er drie nodig.", "er_number", "er usually comes before the number.", ["ik", "heb", "er", "drie", "nodig"]],
+["ER + number", "choice", "Choose the correct sentence.", "Διάλεξε τη σωστή πρόταση.", "We hebben er nog twee.", "er_number", "er + quantity.", ["We hebben nog twee er.", "We hebben er nog twee."]],
+["Passive voice", "choice", "The drawings are checked every week.", "Τα σχέδια ελέγχονται κάθε εβδομάδα.", "De tekeningen worden elke week gecontroleerd.", "passive_voice", "Plural subject → worden + participle.", ["De tekeningen zijn elke week controleren.", "De tekeningen worden elke week gecontroleerd."]],
+["Passive voice", "text", "Translate: The report is sent by email.", "Η αναφορά στέλνεται με email.", "Het rapport wordt per e-mail verstuurd.", "passive_voice", "worden + participle.", []],
+["Passive voice", "choice", "Choose the correct sentence.", "Διάλεξε τη σωστή πρόταση.", "De aanvraag wordt morgen beoordeeld.", "passive_voice", "Present passive = worden + participle.", ["De aanvraag wordt morgen beoordelen.", "De aanvraag wordt morgen beoordeeld."]],
+["Relative clauses", "choice", "De collega ___ naast mij werkt, spreekt Nederlands.", "Ο συνάδελφος που δουλεύει δίπλα μου...", "die", "relative_clause", "de collega → die.", ["die", "dat", "wat"]],
+["Relative clauses", "choice", "Het document ___ ik gisteren stuurde, was fout.", "Το έγγραφο που έστειλα χθες...", "dat", "relative_clause", "het document → dat.", ["die", "dat", "wie"]],
+["Relative clauses", "puzzle", "This is the drawing that I changed yesterday.", "Αυτό είναι το σχέδιο που άλλαξα χθες.", "Dit is de tekening die ik gisteren heb aangepast.", "relative_clause", "de tekening → die; verb cluster at the end.", ["dit", "is", "de tekening", "die", "ik", "gisteren", "heb aangepast"]],
+["Indirect questions", "choice", "Waar woont hij? → Weet je ___?", "Πού μένει; → Ξέρεις πού μένει;", "waar hij woont", "indirect_question", "Indirect question → subject before verb.", ["waar woont hij", "waar hij woont"]],
+["Indirect questions", "choice", "Waarom is het vertraagd? → Ik weet niet ___.", "Δεν ξέρω γιατί καθυστέρησε.", "waarom het vertraagd is", "indirect_question", "Verb goes to the end.", ["waarom is het vertraagd", "waarom het vertraagd is"]],
+["Indirect questions", "puzzle", "Can you tell me when the meeting starts?", "Μπορείς να μου πεις πότε αρχίζει η συνάντηση;", "Kun je me zeggen wanneer de vergadering begint?", "indirect_question", "wanneer + subject + verb final.", ["kun", "je", "me", "zeggen", "wanneer", "de vergadering", "begint"]],
+["Toen vs als", "choice", "___ ik gisteren thuiskwam, was ik moe.", "Όταν γύρισα σπίτι χθες...", "Toen", "toen_als", "Specific completed past event = toen.", ["Toen", "Als"]],
+["Toen vs als", "choice", "___ ik moe ben, ga ik vroeg slapen.", "Όταν είμαι κουρασμένος...", "Als", "toen_als", "Repeated/general condition = als.", ["Toen", "Als"]],
+["Toen vs als", "puzzle", "When I lived in the Netherlands, I cycled to work every day.", "Όταν ζούσα στην Ολλανδία...", "Toen ik in Nederland woonde, fietste ik elke dag naar mijn werk.", "toen_als", "Past period → toen; subordinate clause verb final.", ["toen", "ik", "in Nederland", "woonde", "fietste", "ik", "elke dag", "naar mijn werk"]],
+["TE + infinitive", "choice", "Ik vergeet vaak mijn uren ___.", "Ξεχνώ συχνά να καταγράφω τις ώρες μου.", "te registreren", "te_infinitive", "vergeten + te + infinitive.", ["registreren", "te registreren", "geregistreerd"]],
+["TE + infinitive", "choice", "Ik begin de tekening ___.", "Αρχίζω να ελέγχω το σχέδιο.", "te controleren", "te_infinitive", "beginnen + te.", ["controleren", "te controleren", "gecontroleerd"]],
+["TE + infinitive", "text", "Translate: I try to speak Dutch at work.", "Προσπαθώ να μιλάω ολλανδικά στη δουλειά.", "Ik probeer op het werk Nederlands te spreken.", "te_infinitive", "proberen + te + infinitive.", []],
+["Pronouns & order", "choice", "I gave it to him yesterday.", "Του το έδωσα χθες.", "Ik heb het hem gisteren gegeven.", "pronoun_order", "Object pronouns usually come before time phrase.", ["Ik heb hem het gisteren gegeven.", "Ik heb het hem gisteren gegeven."]],
+["Pronouns & order", "choice", "I called him just now.", "Μόλις τον πήρα τηλέφωνο.", "Ik heb hem net opgebeld.", "pronoun_order", "Pronoun before net; opgebeld at end.", ["Ik heb net hem opgebeld.", "Ik heb hem net opgebeld."]],
+["Pronouns & order", "puzzle", "I have already sent it to her.", "Της το έχω ήδη στείλει.", "Ik heb het haar al gestuurd.", "pronoun_order", "Object pronouns before al.", ["ik", "heb", "het", "haar", "al", "gestuurd"]],
+["Comparison dan/als", "choice", "Deze route is korter ___ de andere.", "Αυτή η διαδρομή είναι πιο σύντομη από την άλλη.", "dan", "comparison", "Comparative → dan.", ["dan", "als"]],
+["Comparison dan/als", "choice", "Deze tekening is even duidelijk ___ de vorige.", "Αυτό το σχέδιο είναι εξίσου σαφές με το προηγούμενο.", "als", "comparison", "even ... als.", ["dan", "als"]],
+["Comparison dan/als", "text", "Translate: This task is more difficult than I expected.", "Αυτή η εργασία είναι πιο δύσκολη απ' όσο περίμενα.", "Deze taak is moeilijker dan ik had verwacht.", "comparison", "comparative + dan.", []],
+["Modal particles", "choice", "Kun je ___ naar deze tekening kijken?", "Μπορείς να ρίξεις μια ματιά σε αυτό το σχέδιο;", "even", "modal_particles", "even softens a small request.", ["even", "wel", "toch"]],
+["Modal particles", "choice", "Kom ___ binnen.", "Πέρνα μέσα.", "maar", "modal_particles", "maar can soften an invitation/imperative.", ["maar", "even", "wel"]],
+["Modal particles", "choice", "Ik denk dat het ___ goed komt.", "Νομίζω ότι τελικά θα πάει καλά.", "wel", "modal_particles", "wel can express reassurance/expectation.", ["maar", "wel", "even"]],
+["Work & CAD", "choice", "A revision of a drawing is a ___.", "Μια αναθεώρηση σχεδίου είναι...", "revisie", "cad_vocab", "revisie = revision.", ["revisie", "voorraad", "aanbesteding"]],
+["Work & CAD", "text", "Translate: I checked whether the dimensions matched the drawing.", "Έλεγξα αν οι διαστάσεις ταίριαζαν με το σχέδιο.", "Ik heb gecontroleerd of de afmetingen met de tekening overeenkwamen.", "cad_vocab", "of-clause → verb final.", []],
+["Work & CAD", "puzzle", "The engineer asked me to update the drawing.", "Ο μηχανικός μου ζήτησε να ενημερώσω το σχέδιο.", "De ingenieur vroeg me de tekening bij te werken.", "cad_vocab", "bijwerken with te → bij te werken.", ["de ingenieur", "vroeg", "me", "de tekening", "bij te werken"]],
+["Work & CAD", "choice", "Which word best means a set of technical specifications?", "Ποια λέξη ταιριάζει καλύτερα σε τεχνικές προδιαγραφές;", "specificaties", "cad_vocab", "specificaties = specifications.", ["specificaties", "aanwijzingen", "metingen"]],
+["Logistics & daily work", "choice", "We need to check the ___.", "Πρέπει να ελέγξουμε το απόθεμα.", "voorraad", "logistics_vocab", "voorraad = stock/inventory.", ["voorraad", "bestelling", "afmeting"]],
+["Logistics & daily work", "text", "Translate: The order was delayed because the supplier delivered late.", "Η παραγγελία καθυστέρησε επειδή ο προμηθευτής παρέδωσε αργά.", "De bestelling liep vertraging op omdat de leverancier te laat leverde.", "logistics_vocab", "vertraging oplopen = incur a delay.", []],
+["Logistics & daily work", "puzzle", "Because the train was late, I arrived at work later.", "Επειδή το τρένο άργησε, έφτασα αργότερα στη δουλειά.", "Doordat de trein te laat was, kwam ik later op mijn werk aan.", "logistics_vocab", "aankomen splits: kwam ... aan.", ["doordat", "de trein", "te laat", "was", "kwam", "ik", "later", "op mijn werk", "aan"]],
+["Logistics & daily work", "choice", "Which means orders?", "Ποια λέξη σημαίνει παραγγελίες;", "bestellingen", "logistics_vocab", "bestelling = order.", ["bestellingen", "afmetingen", "aanwijzingen"]],
+["B1 mixed", "puzzle", "After I had checked the dimensions carefully, I adjusted the drawing because some values were wrong.", "Αφού έλεγξα προσεκτικά τις διαστάσεις, προσάρμοσα το σχέδιο επειδή κάποιες τιμές ήταν λάθος.", "Nadat ik de afmetingen aandachtig had gecontroleerd, heb ik de tekening aangepast omdat sommige waarden verkeerd waren.", "b1_mixed", "Combine nadat + perfect tense + omdat.", ["nadat", "ik", "de afmetingen", "aandachtig", "had gecontroleerd", "heb", "ik", "de tekening", "aangepast", "omdat", "sommige waarden", "verkeerd", "waren"]],
+["B1 mixed", "text", "Translate: Initially I hesitated, but after speaking with my colleague I changed my mind.", "Αρχικά δίστασα, αλλά αφού μίλησα με τον συνάδελφό μου άλλαξα γνώμη.", "Aanvankelijk aarzelde ik, maar nadat ik met mijn collega had gesproken, veranderde ik van gedachten.", "b1_mixed", "van gedachten veranderen = change your mind.", []],
+["B1 mixed", "puzzle", "Although the instructions were clear, I made a mistake because I worked too quickly.", "Αν και οι οδηγίες ήταν σαφείς, έκανα λάθος επειδή δούλεψα πολύ γρήγορα.", "Hoewel de aanwijzingen duidelijk waren, maakte ik een fout omdat ik te snel werkte.", "b1_mixed", "Two subordinate structures in one sentence.", ["hoewel", "de aanwijzingen", "duidelijk", "waren", "maakte", "ik", "een fout", "omdat", "ik", "te snel", "werkte"]],
+["B1 mixed", "text", "Translate: If I do not understand the instructions, I ask the engineer for clarification.", "Αν δεν καταλαβαίνω τις οδηγίες, ζητώ διευκρίνιση από τον μηχανικό.", "Als ik de aanwijzingen niet begrijp, vraag ik de ingenieur om uitleg.", "b1_mixed", "Als-clause verb final, then inversion.", []]
 ].map(a=>({lesson:a[0],type:a[1],prompt:a[2],greek:a[3],answer:a[4],tag:a[5],hint:a[6],options:a[7],words:a[1]==="puzzle"?a[7]:undefined}));
 
-const initial={xp:120,hearts:5,streak:0,bestStreak:0,answered:0,correct:0,today:0,date:new Date().toDateString(),custom:[],mastery:{}};
+const initial={xp:120,streak:0,bestStreak:0,answered:0,correct:0,today:0,date:new Date().toDateString(),b1Plan:{date:new Date().toDateString(),tasks:[false,false,false,false,false,false]},custom:[],mastery:{}};
 for(const q of Q) if(!initial.mastery[q.tag]) initial.mastery[q.tag]={misses:0,wins:0,cat:q.lesson};
 Object.assign(initial.mastery.word_order,{misses:2,wins:1});
 Object.assign(initial.mastery.subordinate_clause,{misses:4,wins:0});
@@ -263,6 +373,9 @@ Object.assign(initial.mastery.er_preposition,{misses:3,wins:0});
 let state; try{state=JSON.parse(localStorage.getItem("dqv3"))||structuredClone(initial)}catch{state=structuredClone(initial)}
 for(const [k,v] of Object.entries(initial.mastery)) if(!state.mastery[k]) state.mastery[k]=v;
 if(state.date!==new Date().toDateString()){state.today=0;state.date=new Date().toDateString()}
+if(!state.b1Plan || state.b1Plan.date!==new Date().toDateString()){
+  state.b1Plan={date:new Date().toDateString(),tasks:[false,false,false,false,false,false]};
+}
 let selectedLesson="Mixed Review", round=[], idx=0, selected=[], chosen="", checked=false, hintUsed=false;
 
 function save(){localStorage.setItem("dqv3",JSON.stringify(state));render()}
@@ -272,7 +385,7 @@ function dist(a,b){a=norm(a);b=norm(b);let m=Array.from({length:a.length+1},()=>
 function mastered(){return Object.values(state.mastery).filter(v=>v.wins>=3&&v.wins>v.misses).length}
 
 function startRound(){
- state.hearts=5;idx=0;round=[];selected=[];chosen="";
+ idx=0;round=[];selected=[];chosen="";
  let pool=[...Q,...state.custom];
  if(selectedLesson!=="Mixed Review") pool=pool.filter(q=>q.lesson===selectedLesson);
  let weighted=[];
@@ -303,15 +416,37 @@ function checkAnswer(){
  state.answered++;state.today++;
  let m=state.mastery[q.tag]||(state.mastery[q.tag]={misses:0,wins:0,cat:q.lesson});
  if(ok){state.correct++;state.streak++;state.bestStreak=Math.max(state.bestStreak,state.streak);gain=exact?10:8;if(hintUsed)gain=Math.max(4,gain-2);if(state.streak===3)gain+=5;if(state.streak===5)gain+=15;state.xp+=gain;m.wins++}
- else{state.streak=0;state.hearts=Math.max(0,state.hearts-1);m.misses++}
+ else{state.streak=0;m.misses++}
  let f=document.getElementById("feedback");f.className="feedback "+(ok?"ok":"no");f.classList.remove("hidden");f.innerHTML=ok?`<b>${exact?"Correct ✅":"Almost exact ✅"} +${gain} XP</b><br>${q.answer}`:`<b>Not yet ❌</b><br><b>Correct:</b> ${q.answer}<br><small>Focus: ${q.tag.replaceAll("_"," ")}</small>`;
  document.getElementById("checkBtn").classList.add("hidden");document.getElementById("hintBtn").classList.add("hidden");document.getElementById("nextBtn").classList.remove("hidden");save()
 }
 function showHint(){hintUsed=true;let f=document.getElementById("feedback");f.className="feedback";f.classList.remove("hidden");f.textContent="💡 "+round[idx].hint}
 function nextQuestion(){if(idx<round.length-1){idx++;load()}else{document.getElementById("prompt").textContent="Round complete 🎉";document.getElementById("greek").textContent="Choose another lesson or play a mixed review.";["choiceArea","puzzleArea","textArea","checkBtn","hintBtn","nextBtn"].forEach(id=>document.getElementById(id).classList.add("hidden"));document.getElementById("startBtn").textContent="Play again";document.getElementById("startBtn").classList.remove("hidden");save()}}
 
+
+function toggleB1Task(i,checked){
+  if(!state.b1Plan || state.b1Plan.date!==new Date().toDateString()){
+    state.b1Plan={date:new Date().toDateString(),tasks:[false,false,false,false,false,false]};
+  }
+  state.b1Plan.tasks[i]=checked;
+  save();
+}
+function renderB1Plan(){
+  if(!state.b1Plan || state.b1Plan.date!==new Date().toDateString()){
+    state.b1Plan={date:new Date().toDateString(),tasks:[false,false,false,false,false,false]};
+  }
+  const tasks=state.b1Plan.tasks;
+  document.querySelectorAll("[data-b1task]").forEach((el,i)=>el.checked=!!tasks[i]);
+  const done=tasks.filter(Boolean).length;
+  const count=document.getElementById("b1PlanCount");
+  const bar=document.getElementById("b1PlanBar");
+  if(count) count.textContent=done+" / 6 completed";
+  if(bar) bar.style.width=(done/6*100)+"%";
+}
+
 function render(){
- document.getElementById("xp").textContent=state.xp;document.getElementById("level").textContent=Math.floor(state.xp/200)+1;document.getElementById("hearts").textContent="❤️".repeat(state.hearts)+"🖤".repeat(5-state.hearts);document.getElementById("streak").textContent=state.streak+"🔥";document.getElementById("mastered").textContent=mastered();
+ renderB1Plan();
+ document.getElementById("xp").textContent=state.xp;document.getElementById("level").textContent=Math.floor(state.xp/200)+1;document.getElementById("streak").textContent=state.streak+"🔥";document.getElementById("mastered").textContent=mastered();
  document.getElementById("dailyBar").style.width=Math.min(100,state.today/20*100)+"%";document.getElementById("dailyText").textContent=`${state.today} / 20 questions today`;
  let eb=document.getElementById("enemyBadges");eb.innerHTML="";Object.entries(state.mastery).sort((a,b)=>(b[1].misses-b[1].wins)-(a[1].misses-a[1].wins)).slice(0,6).forEach(([k,v])=>eb.innerHTML+=`<span class="badge">${v.wins>=3&&v.wins>v.misses?"✅":"👹"} ${k.replaceAll("_"," ")}</span>`);
  let lt=document.getElementById("lessonList");lt.innerHTML="";for(const [name,[icon,desc]] of Object.entries(lessonInfo)){let count=Q.filter(q=>q.lesson===name).length;lt.innerHTML+=`<div class="lesson" onclick="chooseLesson('${name.replaceAll("'","\\'")}')"><b>${icon} ${name}</b><div class="muted">${desc} • ${count} challenges</div></div>`}
