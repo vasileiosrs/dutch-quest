@@ -157,6 +157,35 @@ button,.token,.choice{touch-action:manipulation;-webkit-tap-highlight-color:tran
   <div class="feedback ok" style="margin-top:14px">
     <b>Daily target:</b> 4/6 minimum • 5/6 strong B1-training day • 6/6 excellent
   </div>
+
+
+<div class="card" style="margin-top:14px">
+  <h3>⏱️ Study time</h3>
+  <p class="muted">Track active Dutch study time. Your totals are saved on this device and reset automatically each new day.</p>
+
+  <div class="stats" style="max-width:none;margin-bottom:12px">
+    <div class="stat">
+      <b id="studyClock">00:00:00</b>
+      <span>Current session time</span>
+    </div>
+    <div class="stat">
+      <b id="studyToday">0 min</b>
+      <span>Total study minutes today</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <button id="studyStartBtn" class="primary" onclick="toggleStudyTimer()">Start timer</button>
+    <button class="ghost" onclick="resetStudyTimer()">Reset session</button>
+  </div>
+</div>
+
+  <div class="row">
+    <button id="studyStartBtn" class="primary" onclick="toggleStudyTimer()">Start timer</button>
+    <button class="ghost" onclick="resetStudyTimer()">Reset session</button>
+  </div>
+</div>
+
 </div>
 </section>
 
@@ -187,6 +216,7 @@ button,.token,.choice{touch-action:manipulation;-webkit-tap-highlight-color:tran
 
 <script>
 const lessonInfo={
+"B1 prompt pack":["✍️","daily translation prompts for active B1 production"],
 "Core vocabulary":["🧠","aanvankelijk, aarzeling, aandachtig, voorzichtig"],
 "Word order":["🔀","V2, time-first sentences, inversion"],
 "Subordinate clauses":["🧩","omdat, nadat, wanneer, hoewel, als"],
@@ -357,10 +387,39 @@ const Q=[
 ["B1 mixed", "puzzle", "After I had checked the dimensions carefully, I adjusted the drawing because some values were wrong.", "Αφού έλεγξα προσεκτικά τις διαστάσεις, προσάρμοσα το σχέδιο επειδή κάποιες τιμές ήταν λάθος.", "Nadat ik de afmetingen aandachtig had gecontroleerd, heb ik de tekening aangepast omdat sommige waarden verkeerd waren.", "b1_mixed", "Combine nadat + perfect tense + omdat.", ["nadat", "ik", "de afmetingen", "aandachtig", "had gecontroleerd", "heb", "ik", "de tekening", "aangepast", "omdat", "sommige waarden", "verkeerd", "waren"]],
 ["B1 mixed", "text", "Translate: Initially I hesitated, but after speaking with my colleague I changed my mind.", "Αρχικά δίστασα, αλλά αφού μίλησα με τον συνάδελφό μου άλλαξα γνώμη.", "Aanvankelijk aarzelde ik, maar nadat ik met mijn collega had gesproken, veranderde ik van gedachten.", "b1_mixed", "van gedachten veranderen = change your mind.", []],
 ["B1 mixed", "puzzle", "Although the instructions were clear, I made a mistake because I worked too quickly.", "Αν και οι οδηγίες ήταν σαφείς, έκανα λάθος επειδή δούλεψα πολύ γρήγορα.", "Hoewel de aanwijzingen duidelijk waren, maakte ik een fout omdat ik te snel werkte.", "b1_mixed", "Two subordinate structures in one sentence.", ["hoewel", "de aanwijzingen", "duidelijk", "waren", "maakte", "ik", "een fout", "omdat", "ik", "te snel", "werkte"]],
-["B1 mixed", "text", "Translate: If I do not understand the instructions, I ask the engineer for clarification.", "Αν δεν καταλαβαίνω τις οδηγίες, ζητώ διευκρίνιση από τον μηχανικό.", "Als ik de aanwijzingen niet begrijp, vraag ik de ingenieur om uitleg.", "b1_mixed", "Als-clause verb final, then inversion.", []]
+["B1 mixed", "text", "Translate: If I do not understand the instructions, I ask the engineer for clarification.", "Αν δεν καταλαβαίνω τις οδηγίες, ζητώ διευκρίνιση από τον μηχανικό.", "Als ik de aanwijzingen niet begrijp, vraag ik de ingenieur om uitleg.", "b1_mixed", "Als-clause verb final, then inversion.", []],
+["B1 prompt pack", "text", "Translate: Initially, I found the new task difficult.", "Αρχικά βρήκα τη νέα εργασία δύσκολη.", "Aanvankelijk vond ik de nieuwe taak moeilijk.", "word_order", "Aanvankelijk first → V2 inversion."],
+["B1 prompt pack", "text", "Translate: Tomorrow I will work from home.", "Αύριο θα δουλέψω από το σπίτι.", "Morgen werk ik thuis.", "word_order", "Present tense is natural for a planned near future event."],
+["B1 prompt pack", "text", "Translate: Yesterday I spoke with the engineer.", "Χθες μίλησα με τον μηχανικό.", "Gisteren heb ik met de ingenieur gesproken.", "word_order", "Gisteren first → inversion."],
+["B1 prompt pack", "text", "Translate: Because the dimensions were wrong, I changed the drawing.", "Επειδή οι διαστάσεις ήταν λάθος, άλλαξα το σχέδιο.", "Omdat de afmetingen verkeerd waren, heb ik de tekening aangepast.", "subordinate_clause", "Omdat → verb final; main clause uses inversion."],
+["B1 prompt pack", "text", "Translate: After I had read the instructions, I started the work.", "Αφού διάβασα τις οδηγίες, άρχισα τη δουλειά.", "Nadat ik de aanwijzingen had gelezen, begon ik met het werk.", "subordinate_clause", "Nadat → verbs at the end."],
+["B1 prompt pack", "text", "Translate: Although I was tired, I finished the report.", "Αν και ήμουν κουρασμένος, τελείωσα την αναφορά.", "Hoewel ik moe was, heb ik het rapport afgemaakt.", "subordinate_clause", "Hoewel is a subordinate conjunction."],
+["B1 prompt pack", "text", "Translate: When I have time, I practise Dutch.", "Όταν έχω χρόνο, εξασκούμαι στα ολλανδικά.", "Wanneer ik tijd heb, oefen ik Nederlands.", "subordinate_clause", "Wanneer-clause verb final; then inversion."],
+["B1 prompt pack", "text", "Translate: I have checked the drawing carefully.", "Έλεγξα προσεκτικά το σχέδιο.", "Ik heb de tekening aandachtig gecontroleerd.", "perfect_tense", "hebben + participle."],
+["B1 prompt pack", "text", "Translate: I have lived in the Netherlands.", "Έχω ζήσει στην Ολλανδία.", "Ik heb in Nederland gewoond.", "perfect_tense", "wonen uses hebben."],
+["B1 prompt pack", "text", "Translate: I have completed the project.", "Ολοκλήρωσα το έργο.", "Ik heb het project afgerond.", "perfect_tense", "afronden → afgerond."],
+["B1 prompt pack", "text", "Translate: I adjust the drawing.", "Προσαρμόζω το σχέδιο.", "Ik pas de tekening aan.", "separable_verb", "aanpassen splits in a main clause."],
+["B1 prompt pack", "text", "Translate: I filled in the form yesterday.", "Συμπλήρωσα τη φόρμα χθες.", "Ik heb het formulier gisteren ingevuld.", "separable_verb", "invullen → ingevuld."],
+["B1 prompt pack", "text", "Translate: I am waiting for the bus.", "Περιμένω το λεωφορείο.", "Ik wacht op de bus.", "preposition", "wachten op."],
+["B1 prompt pack", "text", "Translate: I am interested in the project.", "Ενδιαφέρομαι για το έργο.", "Ik ben geïnteresseerd in het project.", "preposition", "geïnteresseerd in."],
+["B1 prompt pack", "text", "Translate: I adapted to the new working environment.", "Προσαρμόστηκα στο νέο εργασιακό περιβάλλον.", "Ik heb me aan de nieuwe werkomgeving aangepast.", "preposition", "zich aanpassen aan."],
+["B1 prompt pack", "text", "Translate: The drawing is checked by the engineer.", "Το σχέδιο ελέγχεται από τον μηχανικό.", "De tekening wordt door de ingenieur gecontroleerd.", "passive_voice", "worden + participle."],
+["B1 prompt pack", "text", "Translate: The man who helped me works here.", "Ο άντρας που με βοήθησε δουλεύει εδώ.", "De man die me geholpen heeft, werkt hier.", "relative_clause", "de man → die."],
+["B1 prompt pack", "text", "Translate: The project that started yesterday is important.", "Το έργο που ξεκίνησε χθες είναι σημαντικό.", "Het project dat gisteren begon, is belangrijk.", "relative_clause", "het project → dat."],
+["B1 prompt pack", "text", "Translate: I don’t know whether he is coming tomorrow.", "Δεν ξέρω αν έρχεται αύριο.", "Ik weet niet of hij morgen komt.", "indirect_question", "of + subject + verb final."],
+["B1 prompt pack", "text", "Translate: I don’t know where she works.", "Δεν ξέρω πού δουλεύει.", "Ik weet niet waar ze werkt.", "indirect_question", "Indirect question → verb final."],
+["B1 prompt pack", "text", "Translate: When I lived in the Netherlands, I cycled every day.", "Όταν ζούσα στην Ολλανδία, έκανα ποδήλατο κάθε μέρα.", "Toen ik in Nederland woonde, fietste ik elke dag.", "toen_als", "Specific past period → toen."],
+["B1 prompt pack", "text", "Translate: If I am tired, I go to bed early.", "Αν είμαι κουρασμένος, κοιμάμαι νωρίς.", "Als ik moe ben, ga ik vroeg naar bed.", "toen_als", "General/repeated condition → als."],
+["B1 prompt pack", "text", "Translate: I try to speak Dutch every day.", "Προσπαθώ να μιλάω ολλανδικά κάθε μέρα.", "Ik probeer elke dag Nederlands te spreken.", "te_infinitive", "proberen + te + infinitive."],
+["B1 prompt pack", "text", "Translate: I forgot to send the email.", "Ξέχασα να στείλω το email.", "Ik ben vergeten de e-mail te sturen.", "te_infinitive", "vergeten + te + infinitive."],
+["B1 prompt pack", "text", "Translate: I have two of them.", "Έχω δύο από αυτά.", "Ik heb er twee.", "er_number", "er before the quantity."],
+["B1 prompt pack", "text", "Translate: I am thinking about it.", "Το σκέφτομαι.", "Ik denk eraan.", "er_preposition", "denken aan → eraan."],
+["B1 prompt pack", "text", "Translate: I am waiting for it.", "Το περιμένω.", "Ik wacht erop.", "er_preposition", "wachten op → erop."],
+["B1 prompt pack", "text", "Translate: I am talking about it.", "Μιλάω γι’ αυτό.", "Ik praat erover.", "er_preposition", "praten over → erover."],
+["B1 prompt pack", "text", "Translate: I changed my mind after the meeting.", "Άλλαξα γνώμη μετά τη συνάντηση.", "Ik ben na de vergadering van gedachten veranderd.", "vocabulary", "van gedachten veranderen = change your mind."]
 ].map(a=>({lesson:a[0],type:a[1],prompt:a[2],greek:a[3],answer:a[4],tag:a[5],hint:a[6],options:a[7],words:a[1]==="puzzle"?a[7]:undefined}));
 
-const initial={xp:120,streak:0,bestStreak:0,answered:0,correct:0,today:0,date:new Date().toDateString(),b1Plan:{date:new Date().toDateString(),tasks:[false,false,false,false,false,false]},custom:[],mastery:{}};
+const initial={xp:120,streak:0,bestStreak:0,answered:0,correct:0,today:0,date:new Date().toDateString(),b1Plan:{date:new Date().toDateString(),tasks:[false,false,false,false,false,false]},study:{date:new Date().toDateString(),totalSeconds:0,sessionSeconds:0,running:false,lastTick:null},custom:[],mastery:{}};
 for(const q of Q) if(!initial.mastery[q.tag]) initial.mastery[q.tag]={misses:0,wins:0,cat:q.lesson};
 Object.assign(initial.mastery.word_order,{misses:2,wins:1});
 Object.assign(initial.mastery.subordinate_clause,{misses:4,wins:0});
@@ -375,6 +434,12 @@ for(const [k,v] of Object.entries(initial.mastery)) if(!state.mastery[k]) state.
 if(state.date!==new Date().toDateString()){state.today=0;state.date=new Date().toDateString()}
 if(!state.b1Plan || state.b1Plan.date!==new Date().toDateString()){
   state.b1Plan={date:new Date().toDateString(),tasks:[false,false,false,false,false,false]};
+}
+if(!state.study || state.study.date!==new Date().toDateString()){
+  state.study={date:new Date().toDateString(),totalSeconds:0,sessionSeconds:0,running:false,lastTick:null};
+}else{
+  state.study.running=false;
+  state.study.lastTick=null;
 }
 let selectedLesson="Mixed Review", round=[], idx=0, selected=[], chosen="", checked=false, hintUsed=false;
 
@@ -414,6 +479,10 @@ function checkAnswer(){
  if(checked)return;let q=round[idx],ua=currentAnswer(q);if(!ua){alert("Answer first.");return}checked=true;
  let exact=norm(ua)===norm(q.answer),close=!exact&&dist(ua,q.answer)<=Math.max(2,Math.floor(norm(q.answer).length*.06)),ok=exact||close,gain=0;
  state.answered++;state.today++;
+ if(state.b1Plan && state.b1Plan.date===new Date().toDateString() && state.today>=20 && !state.b1Plan.tasks[1]){
+   state.b1Plan.tasks[1]=true;
+ }
+
  let m=state.mastery[q.tag]||(state.mastery[q.tag]={misses:0,wins:0,cat:q.lesson});
  if(ok){state.correct++;state.streak++;state.bestStreak=Math.max(state.bestStreak,state.streak);gain=exact?10:8;if(hintUsed)gain=Math.max(4,gain-2);if(state.streak===3)gain+=5;if(state.streak===5)gain+=15;state.xp+=gain;m.wins++}
  else{state.streak=0;m.misses++}
@@ -423,6 +492,73 @@ function checkAnswer(){
 function showHint(){hintUsed=true;let f=document.getElementById("feedback");f.className="feedback";f.classList.remove("hidden");f.textContent="💡 "+round[idx].hint}
 function nextQuestion(){if(idx<round.length-1){idx++;load()}else{document.getElementById("prompt").textContent="Round complete 🎉";document.getElementById("greek").textContent="Choose another lesson or play a mixed review.";["choiceArea","puzzleArea","textArea","checkBtn","hintBtn","nextBtn"].forEach(id=>document.getElementById(id).classList.add("hidden"));document.getElementById("startBtn").textContent="Play again";document.getElementById("startBtn").classList.remove("hidden");save()}}
 
+
+
+let studyInterval=null;
+
+function formatStudyTime(sec){
+  sec=Math.max(0,Math.floor(sec||0));
+  const h=String(Math.floor(sec/3600)).padStart(2,"0");
+  const m=String(Math.floor((sec%3600)/60)).padStart(2,"0");
+  const s=String(sec%60).padStart(2,"0");
+  return `${h}:${m}:${s}`;
+}
+
+function renderStudyTimer(){
+  if(!state.study || state.study.date!==new Date().toDateString()){
+    state.study={date:new Date().toDateString(),totalSeconds:0,sessionSeconds:0,running:false,lastTick:null};
+  }
+  const clock=document.getElementById("studyClock");
+  const today=document.getElementById("studyToday");
+  const btn=document.getElementById("studyStartBtn");
+  if(clock) clock.textContent=formatStudyTime(state.study.sessionSeconds);
+  if(today){
+    const mins=Math.floor(state.study.totalSeconds/60);
+    today.textContent=mins+" min";
+  }
+  if(btn) btn.textContent=state.study.running?"Pause timer":"Start timer";
+}
+
+function studyTick(){
+  if(!state.study.running)return;
+  const now=Date.now();
+  if(!state.study.lastTick)state.study.lastTick=now;
+  const elapsed=Math.max(0,Math.floor((now-state.study.lastTick)/1000));
+  if(elapsed>0){
+    state.study.sessionSeconds+=elapsed;
+    state.study.totalSeconds+=elapsed;
+    state.study.lastTick=now;
+    localStorage.setItem("dqv3",JSON.stringify(state));
+    renderStudyTimer();
+  }
+}
+
+function toggleStudyTimer(){
+  if(!state.study || state.study.date!==new Date().toDateString()){
+    state.study={date:new Date().toDateString(),totalSeconds:0,sessionSeconds:0,running:false,lastTick:null};
+  }
+  state.study.running=!state.study.running;
+  state.study.lastTick=state.study.running?Date.now():null;
+  if(state.study.running){
+    if(studyInterval)clearInterval(studyInterval);
+    studyInterval=setInterval(studyTick,1000);
+  }else if(studyInterval){
+    clearInterval(studyInterval);
+    studyInterval=null;
+  }
+  localStorage.setItem("dqv3",JSON.stringify(state));
+  renderStudyTimer();
+}
+
+function resetStudyTimer(){
+  if(!state.study)return;
+  state.study.sessionSeconds=0;
+  state.study.running=false;
+  state.study.lastTick=null;
+  if(studyInterval){clearInterval(studyInterval);studyInterval=null;}
+  localStorage.setItem("dqv3",JSON.stringify(state));
+  renderStudyTimer();
+}
 
 function toggleB1Task(i,checked){
   if(!state.b1Plan || state.b1Plan.date!==new Date().toDateString()){
@@ -446,6 +582,7 @@ function renderB1Plan(){
 
 function render(){
  renderB1Plan();
+ renderStudyTimer();
  document.getElementById("xp").textContent=state.xp;document.getElementById("level").textContent=Math.floor(state.xp/200)+1;document.getElementById("streak").textContent=state.streak+"🔥";document.getElementById("mastered").textContent=mastered();
  document.getElementById("dailyBar").style.width=Math.min(100,state.today/20*100)+"%";document.getElementById("dailyText").textContent=`${state.today} / 20 questions today`;
  let eb=document.getElementById("enemyBadges");eb.innerHTML="";Object.entries(state.mastery).sort((a,b)=>(b[1].misses-b[1].wins)-(a[1].misses-a[1].wins)).slice(0,6).forEach(([k,v])=>eb.innerHTML+=`<span class="badge">${v.wins>=3&&v.wins>v.misses?"✅":"👹"} ${k.replaceAll("_"," ")}</span>`);
